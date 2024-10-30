@@ -16,6 +16,9 @@ public class AuthService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private JwtService jwtService;
+
     public ActionResult createUser(User user) {
         try {
             user.setPassword(passwordEncoder.encode(user.getPassword()));
