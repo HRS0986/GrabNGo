@@ -1,0 +1,8 @@
+{
+  "properties": [
+    {
+      "name": "security.public-paths",
+      "type": "java.lang.String",
+      "description": "Endpoints that are public and do not require authentication. Comma separated list of paths."
+  }
+] }
