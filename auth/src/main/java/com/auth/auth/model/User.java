@@ -1,10 +1,7 @@
 package com.auth.auth.model;
 
 import com.auth.auth.enums.UserRole;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -17,12 +14,29 @@ public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int UserId;
+
+    @Column(unique = true, nullable = false)
     private String Email;
+
+    @Column(nullable = false)
     private String FirstName;
+
+    @Column(nullable = false)
     private String LastName;
+
+    @Column(nullable = false)
     private String Password;
+
+    @Column(nullable = false)
     private String ContactNumber;
+
+    @Column(unique = true, nullable = false)
     private String NIC;
+
+    @Column(nullable = false)
     private String Address;
+
+    @Column(nullable = false)
+
     private UserRole Role;
 }
