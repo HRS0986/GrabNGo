@@ -24,51 +24,51 @@ public class AuthService {
     public ActionResult createUser(User user) {
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         var result = authRepository.save(user);
-        return new ActionResult(true, Messages.USER_CREATED_SUCCESS, result);
+        return new ActionResult(true, Messages.USER_CREATED_SUCCESS, result, null);
     }
 
     public ActionResult getUserById(int userId) {
         try {
             var result = authRepository.findById(userId);
-            return new ActionResult(true, Messages.USER_FOUND, result);
+            return new ActionResult(true, Messages.USER_FOUND, result, null);
         } catch (Exception e) {
-            return new ActionResult(false, e.getMessage(), null);
+            return new ActionResult(false, e.getMessage(), null, null);
         }
     }
 
     public ActionResult getUserByEmail(String email) {
         try {
             var result = authRepository.findByEmail(email);
-            return new ActionResult(true, Messages.USER_FOUND, result);
+            return new ActionResult(true, Messages.USER_FOUND, result, null);
         } catch (Exception e) {
-            return new ActionResult(false, e.getMessage(), null);
+            return new ActionResult(false, e.getMessage(), null, null);
         }
     }
 
     public ActionResult getAllUsers() {
         try {
             var result = authRepository.findAll();
-            return new ActionResult(true, Messages.USERS_FOUND, result);
+            return new ActionResult(true, Messages.USERS_FOUND, result, null);
         } catch (Exception e) {
-            return new ActionResult(false, e.getMessage(), null);
+            return new ActionResult(false, e.getMessage(), null, null);
         }
     }
 
     public ActionResult updateUser(User user) {
         try {
             var result = authRepository.save(user);
-            return new ActionResult(true, Messages.USER_UPDATED_SUCCESS, result);
+            return new ActionResult(true, Messages.USER_UPDATED_SUCCESS, result, null);
         } catch (Exception e) {
-            return new ActionResult(false, e.getMessage(), null);
+            return new ActionResult(false, e.getMessage(), null, null);
         }
     }
 
     public ActionResult deleteUser(int userId) {
         try {
             authRepository.deleteById(userId);
-            return new ActionResult(true, Messages.USER_DELETED_SUCCESS, null);
+            return new ActionResult(true, Messages.USER_DELETED_SUCCESS, null, null);
         } catch (Exception e) {
-            return new ActionResult(false, e.getMessage(), null);
+            return new ActionResult(false, e.getMessage(), null, null);
         }
     }
 }

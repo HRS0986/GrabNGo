@@ -16,31 +16,31 @@ import lombok.NoArgsConstructor;
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int UserId;
+    private int userId;
 
     @Column(unique = true)
     @NotBlank(message = "Email Address is required")
     @Email
-    private String EmailAddress;
+    private String emailAddress;
 
     @NotBlank
-    private String FirstName;
+    private String firstName;
 
     @NotBlank
-    private String LastName;
+    private String lastName;
 
     @NotBlank
-    private String Password;
+    private String password;
 
     @NotBlank
-    private String ContactNumber;
+    private String contactNumber;
 
     @Column(unique = true)
     @NotBlank
-    private String NIC;
+    private String nic;
 
-    private String Address;
+    private String address;
 
     @NotNull(message = "Role is required")
-    private UserRole Role;
+    private UserRole role;
 }

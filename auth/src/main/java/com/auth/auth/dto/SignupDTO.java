@@ -8,11 +8,11 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 public class SignupDTO {
-    private String EmailAddress;
-    private String FirstName;
-    private String LastName;
-    private String Password;
-    private String ContactNumber;
-    private String NIC;
-    private String Address;
+    private String emailAddress;
+    private String firstName;
+    private String lastName;
+    private String password;
+    private String contactNumber;
+    private String nic;
+    private String address;
 }
