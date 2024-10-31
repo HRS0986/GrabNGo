@@ -13,7 +13,7 @@ import java.util.Map;
 
 @Service
 public class JwtService {
-    public static final String SECRET = "SecretKey";
+    public static final String SECRET = "ldfgh57846yb4587ty4ov8fy7hoediufhbvw43876508347yrvb0e8fh7v08437tv4378tvo3eryfu";
 
     public void validateToken(final String token) {
         Jwts.parserBuilder().setSigningKey(getSignedKey()).build().parseClaimsJws(token);
@@ -33,8 +33,8 @@ public class JwtService {
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
-    public String generateToken(String userName) {
+    public String generateToken(String email) {
         Map<String, Object> claims = new HashMap<>();
-        return createToken(claims, userName);
+        return createToken(claims, email);
     }
 }

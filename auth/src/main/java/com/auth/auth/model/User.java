@@ -6,6 +6,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -34,9 +35,11 @@ public class User {
     private String password;
 
     @NotBlank(message = Messages.CONTACT_REQUIRED)
+    @Pattern(regexp = "^(?:\\+94|0)?(?:7\\d{8})$", message = Messages.INVALID_CONTACT)
     private String contactNumber;
 
     @Column(unique = true)
+    @Pattern(regexp = "(^[0-9]{9}[vVxX]$|^[0-9]{12}$)", message = Messages.INVALID_NIC)
     @NotBlank(message = Messages.NIC_REQUIRED)
     private String nic;
 

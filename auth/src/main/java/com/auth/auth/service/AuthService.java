@@ -1,15 +1,15 @@
 package com.auth.auth.service;
 
 import com.auth.auth.constants.Messages;
+import com.auth.auth.dto.LoginRequest;
 import com.auth.auth.utils.ActionResult;
 import com.auth.auth.model.User;
 import com.auth.auth.repository.AuthRepository;
-import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
-@Service
+@Component
 public class AuthService {
 
     @Autowired
@@ -20,6 +20,11 @@ public class AuthService {
 
     @Autowired
     private JwtService jwtService;
+
+    public ActionResult login(LoginRequest credentials) {
+        var token = jwtService.generateToken(credentials.getEmailAddress());
+        return new ActionResult(true, Messages.USER_AUTHENTICATED, token, null);
+    }
 
     public ActionResult createUser(User user) {
         user.setPassword(passwordEncoder.encode(user.getPassword()));
@@ -38,7 +43,7 @@ public class AuthService {
 
     public ActionResult getUserByEmail(String email) {
         try {
-            var result = authRepository.findByEmail(email);
+            var result = authRepository.findByUsername(email);
             return new ActionResult(true, Messages.USER_FOUND, result, null);
         } catch (Exception e) {
             return new ActionResult(false, e.getMessage(), null, null);

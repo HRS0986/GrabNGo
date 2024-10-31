@@ -8,7 +8,7 @@ import lombok.*;
 @AllArgsConstructor
 public class UserDTO {
     private int userId;
-    private String email;
+    private String emailAddress;
     private String firstName;
     private String lastName;
     private String contactNumber;
