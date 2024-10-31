@@ -8,7 +8,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface AuthRepository extends JpaRepository<User, Integer> {
 
-    @Query("SELECT u FROM User u WHERE u.Email = ?1")
+    @Query("SELECT u FROM User u WHERE u.EmailAddress = ?1")
     User findByEmail(String email);
 
 }

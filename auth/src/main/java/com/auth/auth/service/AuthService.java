@@ -4,6 +4,7 @@ import com.auth.auth.constants.Messages;
 import com.auth.auth.utils.ActionResult;
 import com.auth.auth.model.User;
 import com.auth.auth.repository.AuthRepository;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -21,13 +22,9 @@ public class AuthService {
     private JwtService jwtService;
 
     public ActionResult createUser(User user) {
-        try {
-            user.setPassword(passwordEncoder.encode(user.getPassword()));
-            var result = authRepository.save(user);
-            return new ActionResult(true, Messages.USER_CREATED_SUCCESS, result);
-        } catch (Exception e) {
-            return new ActionResult(false, e.getMessage(), null);
-        }
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        var result = authRepository.save(user);
+        return new ActionResult(true, Messages.USER_CREATED_SUCCESS, result);
     }
 
     public ActionResult getUserById(int userId) {
