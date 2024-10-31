@@ -7,4 +7,14 @@ public class Messages {
     public static final String USER_FOUND = "User found";
     public static final String USERS_FOUND = "Users found";
     public static final String USER_NOT_FOUND = "User not found";
+    public static final String EMAIL_REQUIRED = "Email is required";
+    public static final String PASSWORD_REQUIRED = "Password is required";
+    public static final String FIRSTNAME_REQUIRED = "First Name is required";
+    public static final String LASTNAME_REQUIRED = "Last Name is required";
+    public static final String ADDRESS_REQUIRED = "Address is required";
+    public static final String CONTACT_REQUIRED = "Contact Number is required";
+    public static final String ROLE_REQUIRED = "Role is required";
+    public static final String NIC_REQUIRED = "NIC is required";
+    public static final String INVALID_EMAIL = "Email is invalid";
+    public static final String VALIDATION_ERROR = "Data Validation Error";
 }

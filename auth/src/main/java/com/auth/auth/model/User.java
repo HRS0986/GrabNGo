@@ -1,5 +1,6 @@
 package com.auth.auth.model;
 
+import com.auth.auth.constants.Messages;
 import com.auth.auth.enums.UserRole;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
@@ -19,28 +20,29 @@ public class User {
     private int userId;
 
     @Column(unique = true)
-    @NotBlank(message = "Email Address is required")
-    @Email
+    @NotBlank(message = Messages.EMAIL_REQUIRED)
+    @Email(message = Messages.INVALID_EMAIL)
     private String emailAddress;
 
-    @NotBlank
+    @NotBlank(message = Messages.FIRSTNAME_REQUIRED)
     private String firstName;
 
-    @NotBlank
+    @NotBlank(message = Messages.LASTNAME_REQUIRED)
     private String lastName;
 
-    @NotBlank
+    @NotBlank(message = Messages.PASSWORD_REQUIRED)
     private String password;
 
-    @NotBlank
+    @NotBlank(message = Messages.CONTACT_REQUIRED)
     private String contactNumber;
 
     @Column(unique = true)
-    @NotBlank
+    @NotBlank(message = Messages.NIC_REQUIRED)
     private String nic;
 
+    @NotBlank(message = Messages.ADDRESS_REQUIRED)
     private String address;
 
-    @NotNull(message = "Role is required")
+    @NotNull(message = Messages.ROLE_REQUIRED)
     private UserRole role;
 }
