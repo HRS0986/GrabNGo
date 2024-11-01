@@ -19,7 +19,7 @@ public class UserManagerService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        Optional<User> credentials = authRepository.findByUsername(username);
+        Optional<User> credentials = authRepository.findByEmailAddress(username);
         return credentials.map(UserAuthDetails::new).orElseThrow(() -> new UsernameNotFoundException("Invalid username or password"));
     }
 

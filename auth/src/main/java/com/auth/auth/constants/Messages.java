@@ -23,4 +23,6 @@ public class Messages {
     public static final String INCORRECT_LOGIN_ATTEMPT = "Incorrect login attempt";
 
     public static final String USER_AUTHENTICATED = "User authenticated";
+    public static final String TOKEN_REFRESHED = "Tokens refreshed";
+    public static final String TOKEN_INVALID = "Token is invalid";
 }

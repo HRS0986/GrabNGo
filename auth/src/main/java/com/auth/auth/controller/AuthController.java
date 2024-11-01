@@ -1,6 +1,7 @@
 package com.auth.auth.controller;
 
 import com.auth.auth.dto.LoginRequest;
+import com.auth.auth.dto.RefreshTokenRequest;
 import com.auth.auth.dto.SignupDTO;
 import com.auth.auth.enums.UserRole;
 import com.auth.auth.model.User;
@@ -36,7 +37,7 @@ public class AuthController {
     public ResponseEntity<ActionResult> register(@RequestBody @Valid SignupDTO userData) {
         var user = modelMapper.map(userData, User.class);
         user.setRole(UserRole.STANDARD_USER);
-        var result = authService.createUser(user);
+        var result = authService.register(user);
         return new ResponseEntity<>(result, HttpStatus.CREATED);
     }
 
@@ -49,6 +50,12 @@ public class AuthController {
             return new ResponseEntity<>(authResult, HttpStatus.OK);
         }
         throw new RuntimeException("Authentication failed");
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<ActionResult> refresh(@RequestBody RefreshTokenRequest refreshTokenRequest) {
+        var result = authService.tokenRefresh(refreshTokenRequest);
+        return new ResponseEntity<>(result, HttpStatus.OK);
     }
 
 }

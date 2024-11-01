@@ -2,14 +2,16 @@ package com.auth.auth.service;
 
 import com.auth.auth.constants.Messages;
 import com.auth.auth.dto.LoginRequest;
+import com.auth.auth.dto.LoginResponse;
+import com.auth.auth.dto.RefreshTokenRequest;
 import com.auth.auth.utils.ActionResult;
 import com.auth.auth.model.User;
 import com.auth.auth.repository.AuthRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
-@Component
+@Service
 public class AuthService {
 
     @Autowired
@@ -22,14 +24,28 @@ public class AuthService {
     private JwtService jwtService;
 
     public ActionResult login(LoginRequest credentials) {
-        var token = jwtService.generateToken(credentials.getEmailAddress());
-        return new ActionResult(true, Messages.USER_AUTHENTICATED, token, null);
+        var accessToken = jwtService.generateAccessToken(credentials.getEmailAddress());
+        var refreshToken = jwtService.generateRefreshToken(credentials.getEmailAddress());
+        var tokenResponse = new LoginResponse(accessToken, refreshToken);
+        return new ActionResult(true, Messages.USER_AUTHENTICATED, tokenResponse, null);
     }
 
-    public ActionResult createUser(User user) {
+    public ActionResult register(User user) {
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         var result = authRepository.save(user);
         return new ActionResult(true, Messages.USER_CREATED_SUCCESS, result, null);
+    }
+
+    public ActionResult tokenRefresh(RefreshTokenRequest tokenRequest) {
+        var emailAddress = jwtService.extractEmailAddress(tokenRequest.getRefreshToken());
+        if (!emailAddress.isBlank()) {
+            var user = authRepository.findByEmailAddress(emailAddress).orElseThrow();
+            if (jwtService.isTokenValid(tokenRequest.getRefreshToken(), user.getEmailAddress())) {
+                var accessToken = jwtService.generateAccessToken(emailAddress);
+                return new ActionResult(true, Messages.TOKEN_REFRESHED, accessToken, null);
+            }
+        }
+        throw new RuntimeException(Messages.TOKEN_INVALID);
     }
 
     public ActionResult getUserById(int userId) {
@@ -43,7 +59,7 @@ public class AuthService {
 
     public ActionResult getUserByEmail(String email) {
         try {
-            var result = authRepository.findByUsername(email);
+            var result = authRepository.findByEmailAddress(email);
             return new ActionResult(true, Messages.USER_FOUND, result, null);
         } catch (Exception e) {
             return new ActionResult(false, e.getMessage(), null, null);
@@ -76,4 +92,5 @@ public class AuthService {
             return new ActionResult(false, e.getMessage(), null, null);
         }
     }
+
 }
