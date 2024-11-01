@@ -24,14 +24,15 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/auth")
 public class AuthController {
 
-    @Autowired
-    private AuthService authService;
+    private final AuthService authService;
+    private final ModelMapper modelMapper;
+    private final AuthenticationManager authenticationManager;
 
-    @Autowired
-    private ModelMapper modelMapper;
-
-    @Autowired
-    private AuthenticationManager authenticationManager;
+    public AuthController(AuthService authService, ModelMapper modelMapper, AuthenticationManager authenticationManager) {
+        this.authService = authService;
+        this.modelMapper = modelMapper;
+        this.authenticationManager = authenticationManager;
+    }
 
     @PostMapping("/register")
     public ResponseEntity<ActionResult> register(@RequestBody @Valid SignupDTO userData) {
