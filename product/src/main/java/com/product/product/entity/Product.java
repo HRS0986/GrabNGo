@@ -16,13 +16,11 @@ public class Product {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-//    @Column(name = "product_id")  // Specifies the column name for productId
     private int productId;
 
     @Column(nullable = false)
     private String productName;
 
-//    @Column(name = "product_description")
     private String productDescription;
 
     @Column(nullable = false)
@@ -30,7 +28,6 @@ public class Product {
 
     @Column(nullable = false)
     private int productQuantity;
-
 
     private String productImageUrl;
 
