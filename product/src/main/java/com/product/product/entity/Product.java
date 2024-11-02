@@ -67,19 +67,19 @@ public class Product {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "product_id")  // Specifies the column name for productId
+//    @Column(name = "product_id")  // Specifies the column name for productId
     private int productId;
 
-    @Column(name = "product_name", nullable = false)
+    @Column(nullable = false)
     private String productName;
 
-    @Column(name = "product_description")
+//    @Column(name = "product_description")
     private String productDescription;
 
-    @Column(name = "product_price", nullable = false)
+    @Column(nullable = false)
     private double productPrice;
 
-    @Column(name = "product_quantity", nullable = false)
+    @Column(nullable = false)
     private int productQuantity;
 
     @Column(name = "image_url")
@@ -88,9 +88,9 @@ public class Product {
     @Column(name = "category_id", nullable = false)
     private int productCategoryId;
 
-    @Column(name = "is_available", nullable = false)
+    @Column(nullable = false)
     private boolean isAvailable ;
 
-    @Column(name = "is_active", nullable = false)
+    @Column(nullable = false)
     private boolean isActive ;
 }

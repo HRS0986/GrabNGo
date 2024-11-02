@@ -1,6 +1,6 @@
 package com.product.product.controller;
 import com.product.product.dto.ProductDto;
-import com.product.product.dto.SuccessResponse;
+import com.product.product.response.SuccessResponse;
 import com.product.product.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
