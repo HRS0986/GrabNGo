@@ -5,30 +5,25 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
-
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
-public class Cart {
+public class CartItem {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int cartId;
+    private int cartItemId;
 
     @Column(nullable = false)
-    private int userId;
+    private int productId;
 
     @Column(nullable = false)
-    private int totalAmount;
+    private int quantity;
 
     @Column(nullable = false)
-    private double totalPrice;
+    private double price;
 
-    @Column(nullable = false)
-    private boolean isActive;
-
-    @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<CartItem> cartItems;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "cartId", nullable = false)
+    private Cart cart;
 }
-
