@@ -10,9 +10,9 @@ import java.util.List;
 
 @Entity
 @Table(name = "orders")
-@Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Data
 public class Order {
 
     @Id
@@ -26,4 +26,6 @@ public class Order {
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
     private List<OrderItem> orderItems;
+
+
 }

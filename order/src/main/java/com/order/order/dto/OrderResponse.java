@@ -4,17 +4,20 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.List;
 
-@Data
+
 @NoArgsConstructor
 @AllArgsConstructor
+@Data
 public class OrderResponse {
-    private Long orderId;
-    private Long userId;
-    private Date orderDate;
+    private int orderId;
+    private int userId;
+    private LocalDateTime orderDate;
     private String status;
     private Double totalPrice;
     private List<CartItemDTO> orderItems;
+
+
 }
