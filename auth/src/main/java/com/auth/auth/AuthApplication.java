@@ -12,9 +12,4 @@ public class AuthApplication {
         SpringApplication.run(AuthApplication.class, args);
     }
 
-    @Bean
-    public ModelMapper modelMapper( ) {
-        return new ModelMapper();
-    }
-
 }

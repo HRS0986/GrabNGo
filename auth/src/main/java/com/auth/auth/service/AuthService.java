@@ -7,9 +7,12 @@ import com.auth.auth.dto.RefreshTokenRequest;
 import com.auth.auth.utils.ActionResult;
 import com.auth.auth.model.User;
 import com.auth.auth.repository.AuthRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.HashSet;
 
 @Service
 public class AuthService {
