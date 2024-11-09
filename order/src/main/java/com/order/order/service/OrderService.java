@@ -77,6 +77,12 @@ public class OrderService {
             throw new RuntimeException("Order not found"); // Handle not found case
         }
     }
+    public List<OrderResponse> getOrdersByStatus(String status) {
+        List<Order> orders = orderRepository.findByStatus(status); // Query orders by status
+        return orders.stream()
+                .map(order -> modelMapper.map(order, OrderResponse.class))
+                .collect(Collectors.toList());
+    }
 }
 
 
