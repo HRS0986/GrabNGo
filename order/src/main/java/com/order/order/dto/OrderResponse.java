@@ -1,5 +1,6 @@
 package com.order.order.dto;
 
+import com.order.order.model.OrderItem;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -17,7 +18,5 @@ public class OrderResponse {
     private LocalDateTime orderDate;
     private String status;
     private Double totalPrice;
-    private List<CartItemDTO> orderItems;
-
-
+    private List<OrderItem> orderItems;
 }

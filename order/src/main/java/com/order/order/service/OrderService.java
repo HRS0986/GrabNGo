@@ -1,6 +1,5 @@
 package com.order.order.service;
 
-import com.order.order.dto.CartItemDTO;
 import com.order.order.dto.OrderRequest;
 import com.order.order.dto.OrderResponse;
 import com.order.order.model.Order;
@@ -61,35 +60,27 @@ public class OrderService {
         return orderResponse;
     }
 
-    public Order placeOrder(String customerName, List<CartItemDTO> orderItemDTO) {
-        Order order = new Order();
-        order.setStatus("Created");
-        order.setCreatedDateTime(LocalDateTime.now());
-
-        // Map the list of OrderItemDTOs to OrderItem entities
-        List<OrderItem> orderItems = orderItemDTO.stream().map(dto -> {
-            OrderItem item = new OrderItem();
-            item.setProductId(dto.getProductId()); // Corrected: use dto
-            item.setQuantity(dto.getQuantity());   // Corrected: use dto
-            item.setPrice(dto.getPrice());         // Corrected: use dto
-            item.setOrder(order);                  // Set order reference in item
-            return item;
-        }).collect(Collectors.toList());
-
-        // Set the list of OrderItems to the Order
-        order.setOrderItems(orderItems);
-
-        // Save the order and associated order items to the repository
-        return orderRepository.save(order);
-    }
-
-
-    public List<OrderResponse> getOrdersByUserId(int userId) {
-        List<Order> orders = orderRepository.findByUserId(userId);
-        return orders.stream()
+    public List<OrderResponse> filterOrders(Integer userId, String status) {
+        List<Order> filteredOrders = orderRepository.findOrdersByCriteria(userId, status);
+        // Convert `Order` entities to `OrderResponse` and return
+        return filteredOrders.stream()
                 .map(order -> modelMapper.map(order, OrderResponse.class))
                 .collect(Collectors.toList());
     }
+
+//    public List<OrderResponse> getOrdersByUserId(int userId) {
+//        List<Order> orders = orderRepository.findByUserId(userId);
+//        return orders.stream()
+//                .map(order -> modelMapper.map(order, OrderResponse.class))
+//                .collect(Collectors.toList());
+//    }
+
+//    public List<OrderResponse> getOrdersByStatus(String status) {
+//        List<Order> orders = orderRepository.findByStatus(status); // Query orders by status
+//        return orders.stream()
+//                .map(order -> modelMapper.map(order, OrderResponse.class))
+//                .collect(Collectors.toList());
+//    }
 
     public OrderResponse updateOrderStatus(int orderId, String status) {
         Optional<Order> optionalOrder = orderRepository.findById(orderId);
@@ -101,12 +92,6 @@ public class OrderService {
         } else {
             throw new RuntimeException("Order not found"); // Handle not found case
         }
-    }
-    public List<OrderResponse> getOrdersByStatus(String status) {
-        List<Order> orders = orderRepository.findByStatus(status); // Query orders by status
-        return orders.stream()
-                .map(order -> modelMapper.map(order, OrderResponse.class))
-                .collect(Collectors.toList());
     }
 
     // Method to cancel an order
@@ -134,10 +119,6 @@ public class OrderService {
             throw new RuntimeException("Order not found.");
         }
     }
-
-
-
-
 }
 
 

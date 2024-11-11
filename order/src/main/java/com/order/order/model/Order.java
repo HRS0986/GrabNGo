@@ -23,6 +23,7 @@ public class Order {
     private Double totalPrice;
     private String status;
     private LocalDateTime createdDateTime;
+    private Double discount;
 
     @OneToMany(mappedBy = "order", fetch = FetchType.EAGER)
     private List<OrderItem> orderItems;
