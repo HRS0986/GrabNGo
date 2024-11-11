@@ -28,4 +28,6 @@ public interface ProductRepository extends JpaRepository<Product, Integer> {
     @Transactional
     @Query("UPDATE Product p SET p.isActive = true WHERE p.productId = ?1")  // Assuming 'isActive' is a field in Product
     void restoreProductById(int id);
+
+
 }

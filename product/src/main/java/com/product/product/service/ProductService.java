@@ -5,6 +5,8 @@ import com.product.product.exception.ResourceNotFoundException;
 import com.product.product.repository.ProductRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,6 +22,23 @@ public class ProductService {
 
     @Autowired
     private ModelMapper modelMapper;
+
+    @Autowired
+    private FilteredProducts filteredProducts;
+
+
+//    public Page<ProductDto> getAllProducts(int page, int size, int categoryId, Double minPrice, Double maxPrice, String search, Pageable pageable) {
+//        Page<Product> products = FilteredProducts.getFilteredProducts(page,size,categoryId,minPrice,maxPrice,search,pageable);
+//        return products.map(product -> modelMapper.map(product, ProductDto.class));
+//    }
+
+    public Page<ProductDto> getAllProducts(int page, int size, int categoryId, Double minPrice, Double maxPrice, String search, Pageable pageable) {
+        Page<Product> products = filteredProducts.getFilteredProducts(categoryId, minPrice, maxPrice, search, pageable);
+        Page<ProductDto> productDtos = products.map(product -> modelMapper.map(product, ProductDto.class));
+        System.out.println(productDtos);
+        return productDtos;
+    }
+
 
 
     public ProductDto getProductById(int id) {
