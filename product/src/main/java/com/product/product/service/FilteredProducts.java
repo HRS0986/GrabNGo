@@ -23,38 +23,63 @@ public class FilteredProducts {
     @PersistenceContext
     private EntityManager entityManager;
 
-    public Page<Product> getFilteredProducts(int categoryId, Double minPrice, Double maxPrice, String search, Pageable pageable) {
+//    public Page<Product> getFilteredProducts(int categoryId, Double minPrice, Double maxPrice, String search, Pageable pageable) {
+//        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+//        CriteriaQuery<Product> query = cb.createQuery(Product.class);
+//        Root<Product> product = query.from(Product.class);
+//
+//        List<Predicate> predicates = new ArrayList<>();
+//
+//        // Corrected field name to match `Product` entity
+//        if (categoryId > 0) {
+//            predicates.add(cb.equal(product.get("categoryId"), categoryId));
+//        }
+//
+//        if (minPrice != null) {
+//            predicates.add(cb.greaterThanOrEqualTo(product.get("productPrice"), minPrice));
+//        }
+//
+//        if (maxPrice != null) {
+//            predicates.add(cb.lessThanOrEqualTo(product.get("productPrice"), maxPrice));
+//        }
+//
+//        if (StringUtils.hasText(search)) {
+//            predicates.add(cb.like(cb.lower(product.get("productName")), "%" + search.toLowerCase() + "%"));
+//        }
+//
+//        query.where(predicates.toArray(new Predicate[0]));
+//
+//        TypedQuery<Product> typedQuery = entityManager.createQuery(query);
+//        typedQuery.setFirstResult((int) pageable.getOffset());
+//        typedQuery.setMaxResults(pageable.getPageSize());
+//
+//        return new PageImpl<>(typedQuery.getResultList(), pageable, getTotalCount(cb, predicates));
+//    }
+
+    public List<Product> getFilteredProducts(int categoryId, Double minPrice, Double maxPrice, String search) {
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();
         CriteriaQuery<Product> query = cb.createQuery(Product.class);
         Root<Product> product = query.from(Product.class);
 
         List<Predicate> predicates = new ArrayList<>();
-
-        // Corrected field name to match `Product` entity
         if (categoryId > 0) {
-            predicates.add(cb.equal(product.get("productCategoryId"), categoryId));
+            predicates.add(cb.equal(product.get("categoryId"), categoryId));
         }
-
         if (minPrice != null) {
             predicates.add(cb.greaterThanOrEqualTo(product.get("productPrice"), minPrice));
         }
-
         if (maxPrice != null) {
             predicates.add(cb.lessThanOrEqualTo(product.get("productPrice"), maxPrice));
         }
-
         if (StringUtils.hasText(search)) {
             predicates.add(cb.like(cb.lower(product.get("productName")), "%" + search.toLowerCase() + "%"));
         }
 
         query.where(predicates.toArray(new Predicate[0]));
-
         TypedQuery<Product> typedQuery = entityManager.createQuery(query);
-        typedQuery.setFirstResult((int) pageable.getOffset());
-        typedQuery.setMaxResults(pageable.getPageSize());
-
-        return new PageImpl<>(typedQuery.getResultList(), pageable, getTotalCount(cb, predicates));
+        return typedQuery.getResultList();  // Remove pagination temporarily
     }
+
 
     private long getTotalCount(CriteriaBuilder cb, List<Predicate> predicates) {
         CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);

@@ -1,9 +1,5 @@
 package com.product.product.entity;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Column;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -29,10 +25,10 @@ public class Product {
     @Column(nullable = false)
     private int productQuantity;
 
-    private String productImageUrl;
+    private String imageUrl;
 
     @Column(nullable = false)
-    private int productCategoryId;
+    private int categoryId;
 
     @Column(nullable = false)
     private boolean isAvailable ;

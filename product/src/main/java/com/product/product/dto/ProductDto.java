@@ -16,8 +16,8 @@ public class ProductDto {
     private String productDescription;
     private double productPrice;
     private int productQuantity;
-    private String ProductImageUrl;
-    private int productCategoryId;
+    private String imageUrl;
+    private int categoryId;
     private boolean isAvailable = true;
     private boolean isActive=true;
 

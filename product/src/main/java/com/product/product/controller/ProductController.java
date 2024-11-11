@@ -26,6 +26,35 @@ public class ProductController {
 //        return "Hello World";
 //    }
 
+//    @GetMapping
+//    public ResponseEntity<SuccessResponse<List<ProductDto>>> getProducts(
+//            @RequestParam(value ="categoryId", defaultValue = "2") int categoryId,
+//            @RequestParam(value ="sortBy" , defaultValue = "productName") String sortBy,
+//            @RequestParam(value = "minPrice", required = false) Double minPrice,
+//            @RequestParam(value = "maxPrice", required = false) Double maxPrice,
+//            @RequestParam(value = "search", required = false) String search,
+//            @RequestParam(value = "page", defaultValue = "0") int page,
+//            @RequestParam(value = "size", defaultValue = "10") int size,
+//            @RequestParam(value = "sortDir", defaultValue = "ASC") String sortDir
+//    ) {
+//        Sort sort = sortDir.equalsIgnoreCase(Sort.Direction.ASC.name())
+//                ? Sort.by(sortBy).ascending()
+//                : Sort.by(sortBy).descending();
+//
+//        Pageable pageable = PageRequest.of(page,size,sort);
+//        Page<ProductDto> productPage = productService.getAllProducts(page,size,categoryId,minPrice,maxPrice,search,pageable);
+//
+//        // Wrap the list of products in SuccessResponse
+//        SuccessResponse<List<ProductDto>> success = new SuccessResponse<>(
+//                "Fetched all products",
+//                productPage.getContent(),
+//                HttpStatus.OK
+//        );
+//
+//        // Return the SuccessResponse with HttpStatus
+//        return new ResponseEntity<>(success, HttpStatus.OK);
+//    }
+
     @GetMapping
     public ResponseEntity<SuccessResponse<List<ProductDto>>> getProducts(
             @RequestParam(value ="categoryId", defaultValue = "2") int categoryId,
@@ -33,27 +62,27 @@ public class ProductController {
             @RequestParam(value = "minPrice", required = false) Double minPrice,
             @RequestParam(value = "maxPrice", required = false) Double maxPrice,
             @RequestParam(value = "search", required = false) String search,
-            @RequestParam(value = "page", defaultValue = "0") int page,
-            @RequestParam(value = "size", defaultValue = "10") int size,
             @RequestParam(value = "sortDir", defaultValue = "ASC") String sortDir
     ) {
+        // Set sorting order
         Sort sort = sortDir.equalsIgnoreCase(Sort.Direction.ASC.name())
                 ? Sort.by(sortBy).ascending()
                 : Sort.by(sortBy).descending();
 
-        Pageable pageable = PageRequest.of(page,size,sort);
-        Page<ProductDto> productPage = productService.getAllProducts(page,size,categoryId,minPrice,maxPrice,search,pageable);
+        // Get the list of products without pagination
+        List<ProductDto> productDtos = productService.getAllProducts(categoryId, minPrice, maxPrice, search);
 
         // Wrap the list of products in SuccessResponse
         SuccessResponse<List<ProductDto>> success = new SuccessResponse<>(
                 "Fetched all products",
-                productPage.getContent(),
+                productDtos,
                 HttpStatus.OK
         );
 
         // Return the SuccessResponse with HttpStatus
         return new ResponseEntity<>(success, HttpStatus.OK);
     }
+
 
     @GetMapping("/{id}")
     public ResponseEntity<SuccessResponse<ProductDto>> getProductById(@PathVariable int id) {

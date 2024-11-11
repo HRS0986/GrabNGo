@@ -11,8 +11,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class ProductService {
@@ -26,18 +28,33 @@ public class ProductService {
     @Autowired
     private FilteredProducts filteredProducts;
 
-
 //    public Page<ProductDto> getAllProducts(int page, int size, int categoryId, Double minPrice, Double maxPrice, String search, Pageable pageable) {
-//        Page<Product> products = FilteredProducts.getFilteredProducts(page,size,categoryId,minPrice,maxPrice,search,pageable);
-//        return products.map(product -> modelMapper.map(product, ProductDto.class));
+//        System.out.println("ooooo");
+//        Page<Product> products = filteredProducts.getFilteredProducts(categoryId, minPrice, maxPrice, search, pageable);
+//        System.out.println("ffffffff");
+//        Page<ProductDto> productDtos = products.map(product -> modelMapper.map(product, ProductDto.class));
+//        System.out.println("ffffffff");
+//        return productDtos;
 //    }
 
-    public Page<ProductDto> getAllProducts(int page, int size, int categoryId, Double minPrice, Double maxPrice, String search, Pageable pageable) {
-        Page<Product> products = filteredProducts.getFilteredProducts(categoryId, minPrice, maxPrice, search, pageable);
-        Page<ProductDto> productDtos = products.map(product -> modelMapper.map(product, ProductDto.class));
-        System.out.println(productDtos);
+    public List<ProductDto> getAllProducts(int categoryId, Double minPrice, Double maxPrice, String search) {
+        System.out.println("ooooo");
+
+        // Get the filtered products list (no pagination)
+        List<Product> products = filteredProducts.getFilteredProducts(categoryId, minPrice, maxPrice, search);
+
+        System.out.println("ffffffff");
+
+        // Map the list of products to a list of ProductDto
+        List<ProductDto> productDtos = products.stream()
+                .map(product -> modelMapper.map(product, ProductDto.class))
+                .collect(Collectors.toList());
+
+        System.out.println("ffffffff");
+
         return productDtos;
     }
+
 
 
 
@@ -68,8 +85,8 @@ public class ProductService {
             product.get().setProductQuantity(productDto.getProductQuantity());
             product.get().setActive(productDto.isActive());
             product.get().setAvailable(productDto.isAvailable());
-            product.get().setProductImageUrl(productDto.getProductImageUrl());
-            product.get().setProductCategoryId(productDto.getProductCategoryId());
+            product.get().setImageUrl(productDto.getImageUrl());
+            product.get().setCategoryId(productDto.getCategoryId());
 
             Product updatedProduct = productRepository.save(product.get());
 
