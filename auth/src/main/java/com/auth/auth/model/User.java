@@ -3,9 +3,7 @@ package com.auth.auth.model;
 import com.auth.auth.constants.Messages;
 import com.auth.auth.enums.UserRole;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -19,7 +17,6 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int userId;
 
-    @Column(unique = true)
     @NotBlank(message = Messages.EMAIL_REQUIRED)
     @Email(message = Messages.INVALID_EMAIL)
     private String emailAddress;
@@ -34,15 +31,15 @@ public class User {
     private String password;
 
     @NotBlank(message = Messages.CONTACT_REQUIRED)
+    @Pattern(regexp = "^(?:\\+94|0)?(?:7\\d{8})$", message = Messages.INVALID_CONTACT)
     private String contactNumber;
 
-    @Column(unique = true)
+    @Pattern(regexp = "(^[0-9]{9}[vVxX]$|^[0-9]{12}$)", message = Messages.INVALID_NIC)
     @NotBlank(message = Messages.NIC_REQUIRED)
     private String nic;
 
     @NotBlank(message = Messages.ADDRESS_REQUIRED)
     private String address;
 
-    @NotNull(message = Messages.ROLE_REQUIRED)
     private UserRole role;
 }

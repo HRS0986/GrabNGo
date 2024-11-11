@@ -4,5 +4,20 @@
       "name": "security.public-paths",
       "type": "java.lang.String",
       "description": "Endpoints that are public and do not require authentication. Comma separated list of paths."
-  }
-] }
+    },
+    {
+      "name": "security.jwt.access-token.expiration",
+      "type": "java.lang.String",
+      "description": "Description for security.jwt.access-token.expiration."
+    },
+    {
+      "name": "security.jwt.refresh-token.expiration",
+      "type": "java.lang.String",
+      "description": "Description for security.jwt.refresh-token.expiration."
+    },
+    {
+      "name": "security.jwt.secret-key",
+      "type": "java.lang.String",
+      "description": "Description for security.jwt.secret-key."
+    }
+  ] }
