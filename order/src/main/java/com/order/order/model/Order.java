@@ -24,7 +24,7 @@ public class Order {
     private String status;
     private LocalDateTime createdDateTime;
 
-    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "order", fetch = FetchType.EAGER)
     private List<OrderItem> orderItems;
 
 

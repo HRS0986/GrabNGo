@@ -16,8 +16,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.Optional;
-import lombok.Getter;
-import lombok.Setter;
 
 
 @Service
@@ -32,6 +30,7 @@ public class OrderService {
     public List<Order> getOrders() {
         return orderRepository.findAll();
     }
+
 
     public OrderResponse placeOrder(OrderRequest orderRequest) {
         // Map OrderRequest to Order entity
@@ -111,6 +110,7 @@ public class OrderService {
     }
 
     // Method to cancel an order
+    @Transactional
     public OrderResponse cancelOrder(int orderId) {
         // Find the order by its ID
         Optional<Order> optionalOrder = orderRepository.findById(orderId);
@@ -134,6 +134,9 @@ public class OrderService {
             throw new RuntimeException("Order not found.");
         }
     }
+
+
+
 
 }
 
