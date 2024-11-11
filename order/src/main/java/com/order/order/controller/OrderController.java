@@ -46,5 +46,10 @@ public class OrderController {
         List<OrderResponse> orders = orderService.getOrdersByStatus(status);
         return ResponseEntity.ok(orders);
     }
+    @PutMapping("/{orderId}/cancel")
+    public OrderResponse cancelOrder(@PathVariable int orderId) {
+        return orderService.cancelOrder(orderId);
+    }
+
 
 }
