@@ -1,13 +1,13 @@
 package com.auth.auth.controller;
 
 import com.auth.auth.constants.Messages;
-import com.auth.auth.dto.LoginRequest;
-import com.auth.auth.dto.RefreshTokenRequest;
-import com.auth.auth.dto.SignupDTO;
+import com.auth.auth.dto.*;
 import com.auth.auth.enums.UserRole;
 import com.auth.auth.model.User;
 import com.auth.auth.service.AuthService;
+import com.auth.auth.service.EmailService;
 import com.auth.auth.utils.ActionResult;
+import jakarta.mail.MessagingException;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Valid;
@@ -23,22 +23,25 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.io.UnsupportedEncodingException;
 import java.util.Set;
 
 @RestController
-@RequestMapping("/auth")
+@RequestMapping("/api/auth")
 public class AuthController {
 
     private final AuthService authService;
     private final ModelMapper modelMapper;
     private final AuthenticationManager authenticationManager;
     private final Validator validator;
+    private final EmailService emailService;
 
-    public AuthController(AuthService authService, ModelMapper modelMapper, AuthenticationManager authenticationManager, Validator validator) {
+    public AuthController(AuthService authService, ModelMapper modelMapper, AuthenticationManager authenticationManager, Validator validator, EmailService emailService) {
         this.authService = authService;
         this.modelMapper = modelMapper;
         this.authenticationManager = authenticationManager;
         this.validator = validator;
+        this.emailService = emailService;
     }
 
     @PostMapping("/register")
@@ -70,4 +73,37 @@ public class AuthController {
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
 
+    @PostMapping("/forget-password")
+    public ResponseEntity<ActionResult> forgetPassword(@RequestBody String email) {
+        try {
+            var result = authService.forgetPassword(email);
+            return new ResponseEntity<>(result, HttpStatus.OK);
+        } catch (RuntimeException e) {
+            return new ResponseEntity<>(new ActionResult(false, e.getMessage(), null, null), HttpStatus.NOT_FOUND);
+        } catch (MessagingException | UnsupportedEncodingException e) {
+            return new ResponseEntity<>(new ActionResult(false, Messages.EMAIL_ERROR, null, null), HttpStatus.INTERNAL_SERVER_ERROR);
+        } catch (Exception e) {
+            return new ResponseEntity<>(new ActionResult(false, Messages.UNEXPECTED_ERROR, null, null), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @PostMapping("/verify")
+    public ResponseEntity<ActionResult> verify(@RequestBody VerificationRequest verificationRequest) {
+        try {
+            var result = authService.verifyRequest(verificationRequest);
+            return new ResponseEntity<>(result, HttpStatus.OK);
+        } catch (RuntimeException ex) {
+            return new ResponseEntity<>(new ActionResult(false, ex.getMessage(), null, null), HttpStatus.UNAUTHORIZED);
+        }
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<ActionResult> resetPassword(@RequestBody ResetPasswordRequest resetPasswordRequest) {
+        try {
+            var result = authService.resetPassword(resetPasswordRequest);
+            return new ResponseEntity<>(result, HttpStatus.OK);
+        } catch (RuntimeException ex) {
+            return new ResponseEntity<>(new ActionResult(false, ex.getMessage(), null, null), HttpStatus.UNAUTHORIZED);
+        }
+    }
 }
