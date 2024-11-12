@@ -1,129 +1,92 @@
 package com.order.order.service;
 
 import com.order.order.dto.OrderDTO;
-import com.order.order.dto.OrderRequest;
 import com.order.order.dto.OrderResponse;
-import com.order.order.mapper.OrderMapper;
 import com.order.order.model.Order;
-import com.order.order.model.OrderItem;
-import com.order.order.repository.OrderItemRepository;
 import com.order.order.repository.OrderRepository;
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-
+import com.order.order.config.ModelMapperConfig;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.Optional;
-
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
 public class OrderService {
-    @Autowired
-    private OrderRepository orderRepository;
 
-    @Autowired
-    private ModelMapper modelMapper;
+    private final OrderRepository orderRepository;
+    private final ModelMapper modelMapper;
 
-    public List<Order> getOrders() {
-        return orderRepository.findAll();
+    public OrderService(OrderRepository orderRepository, ModelMapper modelMapper) {
+        this.orderRepository = orderRepository;
+        this.modelMapper = modelMapper;
     }
 
+    public List<OrderDTO> getAllOrders() {
+        List<Order> orders = orderRepository.findAll();
+        return orders.stream()
+                .map(order -> modelMapper.map(order, OrderDTO.class))
+                .collect(Collectors.toList());
+    }
 
     public OrderDTO placeOrder(OrderDTO orderDTO) {
-        // Convert DTO to entity
-        Order order = OrderMapper.toOrderEntity(orderDTO);
-
-        // Set default values for the order
+        Order order = modelMapper.map(orderDTO, Order.class); // Map OrderDTO to Order
         order.setCreatedDateTime(LocalDateTime.now());
         order.setStatus("PLACED");
-
-        // Save the order entity
         Order savedOrder = orderRepository.save(order);
-
-        // Return the saved order as DTO
-        return OrderMapper.toOrderDTO(savedOrder);
+        return modelMapper.map(savedOrder, OrderDTO.class); // Map saved Order to OrderDTO
     }
+
+    public OrderDTO changeOrderStatus(int orderId, String newStatus) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Order not found")); // Handle the case when order is not found
+
+        order.setStatus(newStatus); // Set the new status
+        Order updatedOrder = orderRepository.save(order); // Save the updated order
+
+        // Return the updated order as OrderDTO
+        return modelMapper.map(updatedOrder, OrderDTO.class);
+    }
+
 
     public List<OrderResponse> filterOrders(Integer userId, String status) {
         List<Order> filteredOrders = orderRepository.findOrdersByCriteria(userId, status);
-        // Convert `Order` entities to `OrderResponse` and return
         return filteredOrders.stream()
                 .map(order -> modelMapper.map(order, OrderResponse.class))
                 .collect(Collectors.toList());
     }
-   
-    public OrderDTO getOrderById(int orderId) {
-        Optional<Order> orderOptional = orderRepository.findById(orderId);
 
-        // If the order is not found, return null or throw an exception as per your requirement
-        if (orderOptional.isPresent()) {
-            Order order = orderOptional.get();
-            return OrderMapper.toOrderDTO(order);  // Convert the Order entity to OrderDTO
-        } else {
-            // Return null or handle the case where the order is not found
-            return null;
-        }
-    }
-
-//    public List<OrderResponse> getOrdersByUserId(int userId) {
-//        List<Order> orders = orderRepository.findByUserId(userId);
-//        return orders.stream()
-//                .map(order -> modelMapper.map(order, OrderResponse.class))
-//                .collect(Collectors.toList());
-//    }
-
-//    public List<OrderResponse> getOrdersByStatus(String status) {
-//        List<Order> orders = orderRepository.findByStatus(status); // Query orders by status
-//        return orders.stream()
-//                .map(order -> modelMapper.map(order, OrderResponse.class))
-//                .collect(Collectors.toList());
-//    }
-
-    public OrderResponse updateOrderStatus(int orderId, String status) {
-        Optional<Order> optionalOrder = orderRepository.findById(orderId);
-        if (optionalOrder.isPresent()) {
-            Order order = optionalOrder.get();
-            order.setStatus(status); // Update the status
-            orderRepository.save(order); // Save the updated order
-            return modelMapper.map(order, OrderResponse.class); // Return the updated order response
-        } else {
-            throw new RuntimeException("Order not found"); // Handle not found case
-        }
-    }
-
-    // Method to cancel an order
     @Transactional
     public OrderResponse cancelOrder(int orderId) {
-        // Find the order by its ID
         Optional<Order> optionalOrder = orderRepository.findById(orderId);
         if (optionalOrder.isPresent()) {
             Order order = optionalOrder.get();
-
-            // Check if the order is already canceled or completed
             if ("Cancelled".equals(order.getStatus())) {
                 throw new RuntimeException("Order is already cancelled.");
             }
-
-            // Update the status to "Cancelled"
             order.setStatus("Cancelled");
-
-            // Save the updated order
             orderRepository.save(order);
-
-            // Map the saved order to OrderResponse and return it
             return modelMapper.map(order, OrderResponse.class);
         } else {
             throw new RuntimeException("Order not found.");
         }
     }
+
+    public OrderDTO getOrderById(int orderId) {
+        Optional<Order> orderOptional = orderRepository.findById(orderId);
+        if (orderOptional.isPresent()) {
+            Order order = orderOptional.get();
+            return modelMapper.map(order, OrderDTO.class);
+        } else {
+            return null;
+        }
+    }
+
+
+
+
 }
-
-

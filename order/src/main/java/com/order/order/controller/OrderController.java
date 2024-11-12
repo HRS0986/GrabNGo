@@ -1,53 +1,41 @@
 package com.order.order.controller;
 
 import com.order.order.dto.OrderDTO;
-import com.order.order.dto.OrderRequest;
 import com.order.order.dto.OrderResponse;
-import com.order.order.model.Order;
 import com.order.order.service.OrderService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDate;
 import java.util.List;
 
 @RestController
 @CrossOrigin
-@RequestMapping("/order")
+@RequestMapping("/api/order")
 public class OrderController {
 
-    @Autowired
-    private OrderService orderService;
+    private final OrderService orderService;
 
-    @GetMapping ("/orders")
-    public List<Order> getOrders() {
-        return orderService.getOrders();
-    }
-    @GetMapping("/orderDetails")
-    public ResponseEntity<OrderDTO> getOrderDetails(@PathVariable int orderId) {
-        OrderDTO orderDTO = orderService.getOrderById(orderId);
-
-        if (orderDTO != null) {
-            return ResponseEntity.ok(orderDTO);  // Return the order details if found
-        } else {
-            return ResponseEntity.notFound().build();  // Return 404 if order not found
-        }
+    // Constructor-based dependency injection
+    public OrderController(OrderService orderService) {
+        this.orderService = orderService;
     }
 
-    @PostMapping("/orders")
+    @GetMapping
+    public ResponseEntity<List<OrderDTO>> getAllOrders() {
+        List<OrderDTO> orders = orderService.getAllOrders();
+        return new ResponseEntity<>(orders, HttpStatus.OK);
+    }
+    @PostMapping
     public ResponseEntity<OrderDTO> placeOrder(@RequestBody OrderDTO orderDTO) {
         OrderDTO placedOrder = orderService.placeOrder(orderDTO);
-        return ResponseEntity.ok(placedOrder);
+        return ResponseEntity.ok(orderDTO);
     }
-
-    @PutMapping("/changeStatus")
-    public ResponseEntity<OrderResponse> updateOrderStatus(@PathVariable int orderId, @RequestBody String status) {
-        OrderResponse updatedOrder = orderService.updateOrderStatus(orderId, status);
-        return ResponseEntity.ok(updatedOrder);
+    @PatchMapping("/{orderId}")
+    public ResponseEntity<OrderDTO> changeOrderStatus(@PathVariable int orderId, @RequestBody String newStatus) {
+        OrderDTO updatedOrder = orderService.changeOrderStatus(orderId, newStatus);
+        return new ResponseEntity<>(updatedOrder, HttpStatus.OK);
     }
-
     @GetMapping("/orders/filter")
     public ResponseEntity<List<OrderResponse>> filterOrders(
             @RequestParam(required = false) Integer userId,
@@ -55,22 +43,31 @@ public class OrderController {
         List<OrderResponse> orders = orderService.filterOrders(userId, status);
         return ResponseEntity.ok(orders);
     }
-
-//    @GetMapping("/orders/{userId}")
-//    public ResponseEntity<List<OrderResponse>> getOrdersByUserId(@PathVariable int userId) {
-//        List<OrderResponse> orders = orderService.getOrdersByUserId(userId);
-//        return ResponseEntity.ok(orders);
-//    }
-//
-//    @GetMapping("/getOrdersByStatus/{status}")
-//    public ResponseEntity<List<OrderResponse>> getOrdersByStatus(@PathVariable String status) {
-//        List<OrderResponse> orders = orderService.getOrdersByStatus(status);
-//        return ResponseEntity.ok(orders);
-//    }
-
-    @PutMapping("/cancel")
+    @PutMapping("/{orderId}")
     public OrderResponse cancelOrder(@PathVariable int orderId) {
         return orderService.cancelOrder(orderId);
     }
 
+    @GetMapping("/{orderId}")
+    public ResponseEntity<OrderDTO> getOrderDetails(@PathVariable int orderId) {  // Changed to Long if orderId is Long
+        OrderDTO orderDTO = orderService.getOrderById(orderId);
+
+        if (orderDTO != null) {
+            return ResponseEntity.ok(orderDTO);  // Return 200 with the order details if found
+        } else {
+            return ResponseEntity.notFound().build();  // Return 404 if the order is not found
+        }
+    }
 }
+
+
+
+
+
+
+
+
+
+
+
+
