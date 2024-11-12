@@ -42,4 +42,6 @@ public class User {
     private String address;
 
     private UserRole role;
+
+    private boolean isActive = true;
 }
