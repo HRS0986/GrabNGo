@@ -12,8 +12,4 @@ public class CartApplication {
         SpringApplication.run(CartApplication.class, args);
     }
 
-    @Bean
-    public ModelMapper modelMapper(){
-        return new ModelMapper();
-    }
 }
