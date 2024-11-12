@@ -13,13 +13,33 @@
   <packaging>pom</packaging>
   <name>Archetype - GrabNGo</name>
   <url>http://maven.apache.org</url>
+
   <modules>
     <module>auth</module>
     <module>cart</module>
     <module>category</module>
     <module>product</module>
     <module>order</module>
+      <module>discovery</module>
   </modules>
+
+  <properties>
+    <java.version>17</java.version>
+    <spring-cloud.version>2023.0.3</spring-cloud.version>
+  </properties>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.springframework.cloud</groupId>
+        <artifactId>spring-cloud-dependencies</artifactId>
+        <version>${spring-cloud.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
   <build>
     <plugins>
       <plugin>
