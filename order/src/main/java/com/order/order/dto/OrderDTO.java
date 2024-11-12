@@ -1,6 +1,5 @@
-package com.order.order.model;
+package com.order.order.dto;
 
-import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -8,17 +7,12 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 import java.util.List;
 
-@Entity
-@Table(name = "orders")
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Data
-public class Order {
+public class OrderDTO {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int orderId;
-
     private int userId;
     private Double totalPrice;
     private String status;
@@ -26,9 +20,5 @@ public class Order {
     private Double discount;
 
 
-    @OneToMany(mappedBy = "order", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    private List<OrderItem> orderItems;
-
-
-
+    private List<OrderItemDTO> orderItems;
 }

@@ -1,14 +1,20 @@
 package com.order.order.service;
 
+import com.order.order.dto.OrderDTO;
 import com.order.order.dto.OrderRequest;
 import com.order.order.dto.OrderResponse;
+import com.order.order.mapper.OrderMapper;
 import com.order.order.model.Order;
 import com.order.order.model.OrderItem;
+import com.order.order.repository.OrderItemRepository;
 import com.order.order.repository.OrderRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 
 
 import java.time.LocalDateTime;
@@ -31,33 +37,19 @@ public class OrderService {
     }
 
 
-    public OrderResponse placeOrder(OrderRequest orderRequest) {
-        // Map OrderRequest to Order entity
-        Order order = modelMapper.map(orderRequest, Order.class);
+    public OrderDTO placeOrder(OrderDTO orderDTO) {
+        // Convert DTO to entity
+        Order order = OrderMapper.toOrderEntity(orderDTO);
 
-        // Set status and created date
-        order.setStatus("Created");
+        // Set default values for the order
         order.setCreatedDateTime(LocalDateTime.now());
+        order.setStatus("PLACED");
 
-        // Map the orderItems from the request
-        List<OrderItem> orderItems = orderRequest.getOrderItems().stream()
-                .map(item -> modelMapper.map(item, OrderItem.class))
-                .collect(Collectors.toList());
+        // Save the order entity
+        Order savedOrder = orderRepository.save(order);
 
-        // Set the items to the order
-        order.setOrderItems(orderItems);
-
-        // Save the order in the database
-        orderRepository.save(order);
-
-        // Map the saved order to OrderResponse
-        OrderResponse orderResponse = modelMapper.map(order, OrderResponse.class);
-
-        // Set the status and order date in the response
-        orderResponse.setStatus("Created");
-        orderResponse.setOrderDate(order.getCreatedDateTime());
-
-        return orderResponse;
+        // Return the saved order as DTO
+        return OrderMapper.toOrderDTO(savedOrder);
     }
 
     public List<OrderResponse> filterOrders(Integer userId, String status) {
@@ -66,6 +58,19 @@ public class OrderService {
         return filteredOrders.stream()
                 .map(order -> modelMapper.map(order, OrderResponse.class))
                 .collect(Collectors.toList());
+    }
+   
+    public OrderDTO getOrderById(int orderId) {
+        Optional<Order> orderOptional = orderRepository.findById(orderId);
+
+        // If the order is not found, return null or throw an exception as per your requirement
+        if (orderOptional.isPresent()) {
+            Order order = orderOptional.get();
+            return OrderMapper.toOrderDTO(order);  // Convert the Order entity to OrderDTO
+        } else {
+            // Return null or handle the case where the order is not found
+            return null;
+        }
     }
 
 //    public List<OrderResponse> getOrdersByUserId(int userId) {

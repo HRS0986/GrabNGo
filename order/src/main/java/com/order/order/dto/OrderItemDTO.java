@@ -1,13 +1,14 @@
 package com.order.order.dto;
 
-import com.order.order.model.Order;
-import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Data
 public class OrderItemDTO {
+
     private int productId;
     private int quantity;
     private Double sellPrice;

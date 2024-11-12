@@ -1,5 +1,6 @@
 package com.order.order.controller;
 
+import com.order.order.dto.OrderDTO;
 import com.order.order.dto.OrderRequest;
 import com.order.order.dto.OrderResponse;
 import com.order.order.model.Order;
@@ -24,14 +25,24 @@ public class OrderController {
     public List<Order> getOrders() {
         return orderService.getOrders();
     }
+    @GetMapping("/orderDetails")
+    public ResponseEntity<OrderDTO> getOrderDetails(@PathVariable int orderId) {
+        OrderDTO orderDTO = orderService.getOrderById(orderId);
 
-    @PostMapping("/orders")
-    public ResponseEntity<OrderResponse> placeOrder(@RequestBody OrderRequest orderRequest) {
-        OrderResponse orderResponse = orderService.placeOrder(orderRequest);
-        return ResponseEntity.ok(orderResponse);
+        if (orderDTO != null) {
+            return ResponseEntity.ok(orderDTO);  // Return the order details if found
+        } else {
+            return ResponseEntity.notFound().build();  // Return 404 if order not found
+        }
     }
 
-    @PutMapping("/orders/{orderId}")
+    @PostMapping("/orders")
+    public ResponseEntity<OrderDTO> placeOrder(@RequestBody OrderDTO orderDTO) {
+        OrderDTO placedOrder = orderService.placeOrder(orderDTO);
+        return ResponseEntity.ok(placedOrder);
+    }
+
+    @PutMapping("/changeStatus")
     public ResponseEntity<OrderResponse> updateOrderStatus(@PathVariable int orderId, @RequestBody String status) {
         OrderResponse updatedOrder = orderService.updateOrderStatus(orderId, status);
         return ResponseEntity.ok(updatedOrder);
@@ -57,7 +68,7 @@ public class OrderController {
 //        return ResponseEntity.ok(orders);
 //    }
 
-    @PutMapping("/orders/{orderId}/cancel")
+    @PutMapping("/cancel")
     public OrderResponse cancelOrder(@PathVariable int orderId) {
         return orderService.cancelOrder(orderId);
     }
