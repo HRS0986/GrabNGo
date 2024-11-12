@@ -4,59 +4,33 @@ import com.product.product.entity.Product;
 import com.product.product.exception.ResourceNotFoundException;
 import com.product.product.repository.ProductRepository;
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 public class ProductService {
 
-    @Autowired
-    private ProductRepository productRepository;
+    private final ProductRepository productRepository;
+    private final ModelMapper modelMapper;
+    private final FilteredProducts filteredProducts;
 
-    @Autowired
-    private ModelMapper modelMapper;
-
-    @Autowired
-    private FilteredProducts filteredProducts;
-
-//    public Page<ProductDto> getAllProducts(int page, int size, int categoryId, Double minPrice, Double maxPrice, String search, Pageable pageable) {
-//        System.out.println("ooooo");
-//        Page<Product> products = filteredProducts.getFilteredProducts(categoryId, minPrice, maxPrice, search, pageable);
-//        System.out.println("ffffffff");
-//        Page<ProductDto> productDtos = products.map(product -> modelMapper.map(product, ProductDto.class));
-//        System.out.println("ffffffff");
-//        return productDtos;
-//    }
-
-    public List<ProductDto> getAllProducts(int categoryId, Double minPrice, Double maxPrice, String search) {
-        System.out.println("ooooo");
-
-        // Get the filtered products list (no pagination)
-        List<Product> products = filteredProducts.getFilteredProducts(categoryId, minPrice, maxPrice, search);
-
-        System.out.println("ffffffff");
-
-        // Map the list of products to a list of ProductDto
-        List<ProductDto> productDtos = products.stream()
-                .map(product -> modelMapper.map(product, ProductDto.class))
-                .collect(Collectors.toList());
-
-        System.out.println("ffffffff");
-
-        return productDtos;
+    public ProductService(ProductRepository productRepository, ModelMapper modelMapper, FilteredProducts filteredProducts) {
+        this.productRepository = productRepository;
+        this.modelMapper = modelMapper;
+        this.filteredProducts = filteredProducts;
     }
 
-
-
+    public Page<ProductDto> getAllProducts(int categoryId, Double minPrice, Double maxPrice, String search, Pageable pageable) {
+        // Fetch paginated products from the filteredProducts layer
+        Page<Product> products = filteredProducts.getFilteredProducts(categoryId, minPrice, maxPrice, search, pageable);
+        // Map Product to ProductDto and return the page of ProductDto
+        return products.map(product -> modelMapper.map(product, ProductDto.class));
+    }
 
     public ProductDto getProductById(int id) {
         Optional<Product> product = productRepository.findById(id);
