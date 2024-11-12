@@ -20,9 +20,17 @@ public class Messages {
     public static final String INVALID_CONTACT = "Contact Number is invalid";
     public static final String INVALID_NIC = "NIC is invalid";
     public static final String VALIDATION_ERROR = "Data Validation Error";
-    public static final String INCORRECT_LOGIN_ATTEMPT = "Incorrect login attempt";
+    public static final String INVALID_VERIFICATION_CODE = "Invalid Verification Code";
 
     public static final String USER_AUTHENTICATED = "User authenticated";
     public static final String TOKEN_REFRESHED = "Tokens refreshed";
     public static final String TOKEN_INVALID = "Token is invalid";
+
+    public static final String FORGET_PASSWORD_EMAIL_SUBJECT = "Reset Password Verification";
+    public static final String EMAIL_SEND_SUCCESS = "Email Sent";
+    public static final String UNEXPECTED_ERROR = "An unexpected error occurred";
+    public static final String EMAIL_ERROR = "Failed to send the email. Please try again later";
+    public static final String VERIFICATION_SUCCESS = "Verification Success";
+    public static final String PASSWORD_RESET_SUCCESS = "Password reset successfully";
+
 }
