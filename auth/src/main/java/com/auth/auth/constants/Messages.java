@@ -33,4 +33,8 @@ public class Messages {
     public static final String VERIFICATION_SUCCESS = "Verification Success";
     public static final String PASSWORD_RESET_SUCCESS = "Password reset successfully";
 
+    public static final String INVALID_PASSWORD = "Current password is incorrect";
+    public static final String PASSWORD_CHANGED_SUCCESS = "Password changed successfully";
+
+
 }
