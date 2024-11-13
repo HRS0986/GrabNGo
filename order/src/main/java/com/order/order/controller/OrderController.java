@@ -1,7 +1,6 @@
 package com.order.order.controller;
 
 import com.order.order.dto.OrderDTO;
-import com.order.order.dto.OrderResponse;
 import com.order.order.service.OrderService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -29,22 +28,24 @@ public class OrderController {
     @PostMapping
     public ResponseEntity<OrderDTO> placeOrder(@RequestBody OrderDTO orderDTO) {
         OrderDTO placedOrder = orderService.placeOrder(orderDTO);
-        return ResponseEntity.ok(orderDTO);
+        return new ResponseEntity<>(orderDTO, HttpStatus.CREATED);
+
     }
     @PatchMapping("/{orderId}")
     public ResponseEntity<OrderDTO> changeOrderStatus(@PathVariable int orderId, @RequestBody String newStatus) {
         OrderDTO updatedOrder = orderService.changeOrderStatus(orderId, newStatus);
         return new ResponseEntity<>(updatedOrder, HttpStatus.OK);
     }
-    @GetMapping("/orders/filter")
-    public ResponseEntity<List<OrderResponse>> filterOrders(
+    @GetMapping("/filter")
+    public ResponseEntity<List<OrderDTO>> filterOrders(
             @RequestParam(required = false) Integer userId,
             @RequestParam(required = false) String status) {
-        List<OrderResponse> orders = orderService.filterOrders(userId, status);
+        List<OrderDTO> orders = orderService.filterOrders(userId, status);
         return ResponseEntity.ok(orders);
     }
+
     @PutMapping("/{orderId}")
-    public OrderResponse cancelOrder(@PathVariable int orderId) {
+    public OrderDTO cancelOrder(@PathVariable int orderId) {
         return orderService.cancelOrder(orderId);
     }
 

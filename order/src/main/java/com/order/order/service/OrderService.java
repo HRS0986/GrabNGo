@@ -1,13 +1,11 @@
 package com.order.order.service;
 
 import com.order.order.dto.OrderDTO;
-import com.order.order.dto.OrderResponse;
 import com.order.order.model.Order;
 import com.order.order.repository.OrderRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import com.order.order.config.ModelMapperConfig;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -25,7 +23,7 @@ public class OrderService {
         this.orderRepository = orderRepository;
         this.modelMapper = modelMapper;
     }
-
+    //get all orders
     public List<OrderDTO> getAllOrders() {
         List<Order> orders = orderRepository.findAll();
         return orders.stream()
@@ -33,14 +31,16 @@ public class OrderService {
                 .collect(Collectors.toList());
     }
 
+    // create order
     public OrderDTO placeOrder(OrderDTO orderDTO) {
-        Order order = modelMapper.map(orderDTO, Order.class); // Map OrderDTO to Order
+        Order order = modelMapper.map(orderDTO, Order.class);
         order.setCreatedDateTime(LocalDateTime.now());
         order.setStatus("PLACED");
         Order savedOrder = orderRepository.save(order);
-        return modelMapper.map(savedOrder, OrderDTO.class); // Map saved Order to OrderDTO
+        return modelMapper.map(savedOrder, OrderDTO.class);
     }
 
+    //change order status
     public OrderDTO changeOrderStatus(int orderId, String newStatus) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new RuntimeException("Order not found")); // Handle the case when order is not found
@@ -53,15 +53,16 @@ public class OrderService {
     }
 
 
-    public List<OrderResponse> filterOrders(Integer userId, String status) {
+    public List<OrderDTO> filterOrders(Integer userId, String status) {
         List<Order> filteredOrders = orderRepository.findOrdersByCriteria(userId, status);
         return filteredOrders.stream()
-                .map(order -> modelMapper.map(order, OrderResponse.class))
+                .map(order -> modelMapper.map(order, OrderDTO.class))  // Mapping to OrderDTO
                 .collect(Collectors.toList());
     }
 
+
     @Transactional
-    public OrderResponse cancelOrder(int orderId) {
+    public OrderDTO cancelOrder(int orderId) {
         Optional<Order> optionalOrder = orderRepository.findById(orderId);
         if (optionalOrder.isPresent()) {
             Order order = optionalOrder.get();
@@ -70,7 +71,7 @@ public class OrderService {
             }
             order.setStatus("Cancelled");
             orderRepository.save(order);
-            return modelMapper.map(order, OrderResponse.class);
+            return modelMapper.map(order, OrderDTO.class);
         } else {
             throw new RuntimeException("Order not found.");
         }
