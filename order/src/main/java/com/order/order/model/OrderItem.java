@@ -18,7 +18,8 @@ public class OrderItem {
     private int quantity;
     @Column(nullable = false)
     private Double sellPrice;
-
+    @Column(nullable = false)
+    private double discount;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "orderId", nullable = false)

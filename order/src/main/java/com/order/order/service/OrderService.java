@@ -2,12 +2,12 @@ package com.order.order.service;
 
 import com.order.order.dto.OrderDTO;
 import com.order.order.model.Order;
+import com.order.order.model.OrderItem;
 import com.order.order.repository.OrderRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -23,6 +23,7 @@ public class OrderService {
         this.orderRepository = orderRepository;
         this.modelMapper = modelMapper;
     }
+
     //get all orders
     public List<OrderDTO> getAllOrders() {
         List<Order> orders = orderRepository.findAll();
@@ -31,11 +32,17 @@ public class OrderService {
                 .collect(Collectors.toList());
     }
 
-    // create order
     public OrderDTO placeOrder(OrderDTO orderDTO) {
         Order order = modelMapper.map(orderDTO, Order.class);
-        order.setCreatedDateTime(LocalDateTime.now());
-        order.setStatus("PLACED");
+        List<OrderItem> orderItems = orderDTO.getOrderItems().stream()
+                .map(orderItemDTO -> {
+                    OrderItem orderItem = modelMapper.map(orderItemDTO, OrderItem.class);
+                    orderItem.setOrder(order);
+                    return orderItem;
+                })
+                .collect(Collectors.toList());
+        order.setOrderItems(orderItems);
+
         Order savedOrder = orderRepository.save(order);
         return modelMapper.map(savedOrder, OrderDTO.class);
     }
@@ -52,14 +59,12 @@ public class OrderService {
         return modelMapper.map(updatedOrder, OrderDTO.class);
     }
 
-
     public List<OrderDTO> filterOrders(Integer userId, String status) {
         List<Order> filteredOrders = orderRepository.findOrdersByCriteria(userId, status);
         return filteredOrders.stream()
                 .map(order -> modelMapper.map(order, OrderDTO.class))  // Mapping to OrderDTO
                 .collect(Collectors.toList());
     }
-
 
     @Transactional
     public OrderDTO cancelOrder(int orderId) {
@@ -86,8 +91,4 @@ public class OrderService {
             return null;
         }
     }
-
-
-
-
 }

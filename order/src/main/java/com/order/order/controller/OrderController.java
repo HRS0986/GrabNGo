@@ -15,7 +15,6 @@ public class OrderController {
 
     private final OrderService orderService;
 
-    // Constructor-based dependency injection
     public OrderController(OrderService orderService) {
         this.orderService = orderService;
     }
@@ -28,7 +27,7 @@ public class OrderController {
     @PostMapping
     public ResponseEntity<OrderDTO> placeOrder(@RequestBody OrderDTO orderDTO) {
         OrderDTO placedOrder = orderService.placeOrder(orderDTO);
-        return new ResponseEntity<>(orderDTO, HttpStatus.CREATED);
+        return new ResponseEntity<>(placedOrder, HttpStatus.CREATED);
 
     }
     @PatchMapping("/{orderId}")
@@ -50,13 +49,13 @@ public class OrderController {
     }
 
     @GetMapping("/{orderId}")
-    public ResponseEntity<OrderDTO> getOrderDetails(@PathVariable int orderId) {  // Changed to Long if orderId is Long
+    public ResponseEntity<OrderDTO> getOrderDetails(@PathVariable int orderId) {
         OrderDTO orderDTO = orderService.getOrderById(orderId);
 
         if (orderDTO != null) {
-            return ResponseEntity.ok(orderDTO);  // Return 200 with the order details if found
+            return ResponseEntity.ok(orderDTO);
         } else {
-            return ResponseEntity.notFound().build();  // Return 404 if the order is not found
+            return ResponseEntity.notFound().build();
         }
     }
 }

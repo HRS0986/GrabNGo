@@ -26,10 +26,9 @@ public class Order {
     @Column(nullable = false)
     private String status;
     @Column(nullable = false)
-    private LocalDateTime createdDateTime;
+    private LocalDateTime createdDateTime = LocalDateTime.now();
     @Column(nullable = false)
     private Double discount;
-
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     @ToString.Exclude
