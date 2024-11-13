@@ -34,14 +34,12 @@ public class AuthController {
     private final ModelMapper modelMapper;
     private final AuthenticationManager authenticationManager;
     private final Validator validator;
-    private final EmailService emailService;
 
     public AuthController(AuthService authService, ModelMapper modelMapper, AuthenticationManager authenticationManager, Validator validator, EmailService emailService) {
         this.authService = authService;
         this.modelMapper = modelMapper;
         this.authenticationManager = authenticationManager;
         this.validator = validator;
-        this.emailService = emailService;
     }
 
     @PostMapping("/register")
@@ -78,8 +76,6 @@ public class AuthController {
         try {
             var result = authService.forgetPassword(email);
             return new ResponseEntity<>(result, HttpStatus.OK);
-        } catch (RuntimeException e) {
-            return new ResponseEntity<>(new ActionResult(false, e.getMessage(), null, null), HttpStatus.NOT_FOUND);
         } catch (MessagingException | UnsupportedEncodingException e) {
             return new ResponseEntity<>(new ActionResult(false, Messages.EMAIL_ERROR, null, null), HttpStatus.INTERNAL_SERVER_ERROR);
         } catch (Exception e) {
@@ -99,11 +95,7 @@ public class AuthController {
 
     @PostMapping("/reset-password")
     public ResponseEntity<ActionResult> resetPassword(@RequestBody ResetPasswordRequest resetPasswordRequest) {
-        try {
-            var result = authService.resetPassword(resetPasswordRequest);
-            return new ResponseEntity<>(result, HttpStatus.OK);
-        } catch (RuntimeException ex) {
-            return new ResponseEntity<>(new ActionResult(false, ex.getMessage(), null, null), HttpStatus.UNAUTHORIZED);
-        }
+        var result = authService.resetPassword(resetPasswordRequest);
+        return new ResponseEntity<>(result, HttpStatus.OK);
     }
 }

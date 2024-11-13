@@ -1,6 +1,7 @@
 package com.auth.auth.utils;
 
 import com.auth.auth.constants.Messages;
+import com.auth.auth.exception.UserNotFoundException;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,6 +23,13 @@ public class ErrorHandler {
                 errors.put(violation.getPropertyPath().toString(), violation.getMessage()));
         var result = new ActionResult(false, Messages.VALIDATION_ERROR, null, errors);
         return new ResponseEntity<>(result, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(UserNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ResponseEntity<ActionResult> handleUserNotFound(UserNotFoundException ex) {
+        var result = new ActionResult(false, ex.getMessage(), null, null);
+        return new ResponseEntity<>(result, HttpStatus.NOT_FOUND);
     }
 
 }

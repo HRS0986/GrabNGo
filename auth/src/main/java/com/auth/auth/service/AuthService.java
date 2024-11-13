@@ -2,6 +2,7 @@ package com.auth.auth.service;
 
 import com.auth.auth.constants.Messages;
 import com.auth.auth.dto.*;
+import com.auth.auth.exception.UserNotFoundException;
 import com.auth.auth.model.VerificationCode;
 import com.auth.auth.repository.VerificationCodeRepository;
 import com.auth.auth.utils.ActionResult;
@@ -64,7 +65,7 @@ public class AuthService {
     public ActionResult forgetPassword(String email) throws MessagingException, IOException {
         var userOptional = authRepository.findByEmailAddress(email);
         if (userOptional.isEmpty()) {
-            throw new RuntimeException(Messages.USER_NOT_FOUND);
+            throw new UserNotFoundException(Messages.USER_NOT_FOUND);
         }
 
         String code = VerificationCodeGenerator.generateCode();
@@ -115,7 +116,7 @@ public class AuthService {
 
         var userOptional = authRepository.findByEmailAddress(resetPasswordRequest.getEmail());
         if (userOptional.isEmpty()) {
-            throw new RuntimeException(Messages.USER_NOT_FOUND);
+            throw new UserNotFoundException(Messages.USER_NOT_FOUND);
         }
 
         User user = userOptional.get();
@@ -123,50 +124,4 @@ public class AuthService {
         authRepository.save(user);
         return new ActionResult(true, Messages.PASSWORD_RESET_SUCCESS, null, null);
     }
-
-    public ActionResult getUserById(int userId) {
-        try {
-            var result = authRepository.findById(userId);
-            return new ActionResult(true, Messages.USER_FOUND, result, null);
-        } catch (Exception e) {
-            return new ActionResult(false, e.getMessage(), null, null);
-        }
-    }
-
-    public ActionResult getUserByEmail(String email) {
-        try {
-            var result = authRepository.findByEmailAddress(email);
-            return new ActionResult(true, Messages.USER_FOUND, result, null);
-        } catch (Exception e) {
-            return new ActionResult(false, e.getMessage(), null, null);
-        }
-    }
-
-    public ActionResult getAllUsers() {
-        try {
-            var result = authRepository.findAll();
-            return new ActionResult(true, Messages.USERS_FOUND, result, null);
-        } catch (Exception e) {
-            return new ActionResult(false, e.getMessage(), null, null);
-        }
-    }
-
-    public ActionResult updateUser(User user) {
-        try {
-            var result = authRepository.save(user);
-            return new ActionResult(true, Messages.USER_UPDATED_SUCCESS, result, null);
-        } catch (Exception e) {
-            return new ActionResult(false, e.getMessage(), null, null);
-        }
-    }
-
-    public ActionResult deleteUser(int userId) {
-        try {
-            authRepository.deleteById(userId);
-            return new ActionResult(true, Messages.USER_DELETED_SUCCESS, null, null);
-        } catch (Exception e) {
-            return new ActionResult(false, e.getMessage(), null, null);
-        }
-    }
-
 }
