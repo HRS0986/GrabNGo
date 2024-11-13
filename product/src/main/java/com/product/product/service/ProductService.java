@@ -4,10 +4,10 @@ import com.product.product.entity.Product;
 import com.product.product.exception.ResourceNotFoundException;
 import com.product.product.repository.ProductRepository;
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -15,12 +15,22 @@ import java.util.Optional;
 @Service
 public class ProductService {
 
-    @Autowired
-    private ProductRepository productRepository;
+    private final ProductRepository productRepository;
+    private final ModelMapper modelMapper;
+    private final FilteredProducts filteredProducts;
 
-    @Autowired
-    private ModelMapper modelMapper;
+    public ProductService(ProductRepository productRepository, ModelMapper modelMapper, FilteredProducts filteredProducts) {
+        this.productRepository = productRepository;
+        this.modelMapper = modelMapper;
+        this.filteredProducts = filteredProducts;
+    }
 
+    public Page<ProductDto> getAllProducts(int categoryId, Double minPrice, Double maxPrice, String search, Pageable pageable) {
+        // Fetch paginated products from the filteredProducts layer
+        Page<Product> products = filteredProducts.getFilteredProducts(categoryId, minPrice, maxPrice, search, pageable);
+        // Map Product to ProductDto and return the page of ProductDto
+        return products.map(product -> modelMapper.map(product, ProductDto.class));
+    }
 
     public ProductDto getProductById(int id) {
         Optional<Product> product = productRepository.findById(id);
@@ -49,8 +59,8 @@ public class ProductService {
             product.get().setProductQuantity(productDto.getProductQuantity());
             product.get().setActive(productDto.isActive());
             product.get().setAvailable(productDto.isAvailable());
-            product.get().setProductImageUrl(productDto.getProductImageUrl());
-            product.get().setProductCategoryId(productDto.getProductCategoryId());
+            product.get().setImageUrl(productDto.getImageUrl());
+            product.get().setCategoryId(productDto.getCategoryId());
 
             Product updatedProduct = productRepository.save(product.get());
 
