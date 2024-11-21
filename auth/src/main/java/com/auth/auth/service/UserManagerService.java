@@ -55,12 +55,23 @@ public class UserManagerService implements UserDetailsService {
     public ActionResult getProfile(String email) {
         var userOptional = authRepository.findByEmailAddress(email);
         if (userOptional.isEmpty()) {
-            throw new UserNotFoundException(Messages.USER_NOT_FOUND);
+            return new ActionResult(false, Messages.USER_NOT_FOUND, null, null);
         }
-
         var user = userOptional.get();
         var userDTO = modelMapper.map(user, UserDTO.class);
         return new ActionResult(true, Messages.USER_FOUND, userDTO, null);
+    }
+
+    public ActionResult isDuplicateUser(String email, String nic) {
+        var userOptional = authRepository.findByEmailAddress(email);
+        if (userOptional.isPresent()) {
+            return new ActionResult(true, Messages.EMAIL_ALREADY_EXISTS, null, null);
+        }
+        userOptional = authRepository.findByNic(nic);
+        if (userOptional.isPresent()) {
+            return new ActionResult(true, Messages.NIC_ALREADY_EXISTS, null, null);
+        }
+        return new ActionResult(false, Messages.USER_NOT_FOUND, null, null);
     }
 
     public ActionResult updateProfile(UserDTO userDTO) {

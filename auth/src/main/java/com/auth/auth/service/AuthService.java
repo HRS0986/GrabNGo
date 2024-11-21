@@ -2,6 +2,7 @@ package com.auth.auth.service;
 
 import com.auth.auth.constants.Messages;
 import com.auth.auth.dto.*;
+import com.auth.auth.exception.InvalidAuthenticationException;
 import com.auth.auth.exception.UserNotFoundException;
 import com.auth.auth.model.VerificationCode;
 import com.auth.auth.repository.VerificationCodeRepository;
@@ -48,15 +49,20 @@ public class AuthService {
     }
 
     public ActionResult tokenRefresh(RefreshTokenRequest tokenRequest) {
-        var emailAddress = jwtService.extractEmailAddress(tokenRequest.getRefreshToken());
-        if (!emailAddress.isBlank()) {
-            var user = authRepository.findByEmailAddress(emailAddress).orElseThrow();
-            if (jwtService.isTokenValid(tokenRequest.getRefreshToken(), user.getEmailAddress())) {
-                var accessToken = jwtService.generateAccessToken(emailAddress);
-                return new ActionResult(true, Messages.TOKEN_REFRESHED, accessToken, null);
+        var emailAddressRefreshToken = jwtService.extractEmailAddress(tokenRequest.getRefreshToken());
+        var emailAddressAccessToken = jwtService.extractEmailAddress(tokenRequest.getAccessToken());
+
+        if (!emailAddressRefreshToken.isBlank() && !emailAddressAccessToken.isBlank()) {
+            if (emailAddressRefreshToken.equals(emailAddressAccessToken)) {
+                var user = authRepository.findByEmailAddress(emailAddressRefreshToken).orElseThrow();
+                if (jwtService.isTokenValid(tokenRequest.getRefreshToken(), user.getEmailAddress())) {
+                    var accessToken = jwtService.generateAccessToken(emailAddressRefreshToken);
+                    return new ActionResult(true, Messages.TOKEN_REFRESHED, accessToken, null);
+                }
             }
         }
-        throw new RuntimeException(Messages.TOKEN_INVALID);
+
+        throw new InvalidAuthenticationException(Messages.TOKEN_INVALID);
     }
 
     public ActionResult forgetPassword(String email) throws MessagingException, IOException {
@@ -81,16 +87,16 @@ public class AuthService {
     public ActionResult verifyRequest(VerificationRequest verificationRequest, boolean deactivateCode) {
         var codeOptional = verificationCodeRepository.findByCode(verificationRequest.getVerificationCode());
         if (codeOptional.isEmpty()) {
-            throw new RuntimeException(Messages.INVALID_VERIFICATION_CODE);
+            throw new InvalidAuthenticationException(Messages.INVALID_VERIFICATION_CODE);
         }
 
         VerificationCode verificationCode = codeOptional.get();
         if (!verificationCode.getEmail().equals(verificationRequest.getEmail())) {
-            throw new RuntimeException(Messages.INVALID_VERIFICATION_CODE);
+            throw new InvalidAuthenticationException(Messages.INVALID_VERIFICATION_CODE);
         }
 
         if (!verificationCode.isValid()) {
-            throw new RuntimeException(Messages.INVALID_VERIFICATION_CODE);
+            throw new InvalidAuthenticationException(Messages.INVALID_VERIFICATION_CODE);
         }
 
         if (deactivateCode) {
