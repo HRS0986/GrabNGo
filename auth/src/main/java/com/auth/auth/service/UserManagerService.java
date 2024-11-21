@@ -37,27 +37,31 @@ public class UserManagerService implements UserDetailsService {
     }
 
     public ActionResult changePassword(ChangePasswordRequest changePasswordRequest) {
-        var userOptional = authRepository.findByEmailAddress(changePasswordRequest.getEmail());
-        if (userOptional.isEmpty()) {
-            throw new RuntimeException(Messages.USER_NOT_FOUND);
-        }
-
-        User user = userOptional.get();
+        var isUserActive = isActiveEmail(changePasswordRequest.getEmail());
+        User user = (User) isUserActive.getData();
         if (!passwordEncoder.matches(changePasswordRequest.getOldPassword(), user.getPassword())) {
             throw new RuntimeException(Messages.INVALID_PASSWORD);
         }
-
         user.setPassword(passwordEncoder.encode(changePasswordRequest.getNewPassword()));
         authRepository.save(user);
         return new ActionResult(true, Messages.PASSWORD_CHANGED_SUCCESS, null, null);
     }
 
-    public ActionResult getProfile(String email) {
+    public ActionResult isActiveEmail(String email) {
         var userOptional = authRepository.findByEmailAddress(email);
         if (userOptional.isEmpty()) {
-            return new ActionResult(false, Messages.USER_NOT_FOUND, null, null);
+            throw new UserNotFoundException(Messages.USER_NOT_FOUND);
         }
         var user = userOptional.get();
+        if (!user.isActive()) {
+            throw new UserNotFoundException(Messages.USER_NOT_FOUND);
+        }
+        return new ActionResult(true, Messages.USER_FOUND, user, null);
+    }
+
+    public ActionResult getProfile(String email) {
+        var isUserActive = isActiveEmail(email);
+        User user = (User) isUserActive.getData();
         var userDTO = modelMapper.map(user, UserDTO.class);
         return new ActionResult(true, Messages.USER_FOUND, userDTO, null);
     }
@@ -75,12 +79,8 @@ public class UserManagerService implements UserDetailsService {
     }
 
     public ActionResult updateProfile(UserDTO userDTO) {
-        var userOptional = authRepository.findByEmailAddress(userDTO.getEmailAddress());
-        if (userOptional.isEmpty()) {
-            throw new UserNotFoundException(Messages.USER_NOT_FOUND);
-        }
-
-        var user = userOptional.get();
+        var isUserActive = isActiveEmail(userDTO.getEmailAddress());
+        User user = (User) isUserActive.getData();
         user.setFirstName(userDTO.getFirstName());
         user.setLastName(userDTO.getLastName());
         user.setContactNumber(userDTO.getContactNumber());
@@ -91,11 +91,8 @@ public class UserManagerService implements UserDetailsService {
     }
 
     public ActionResult deleteProfile(String email) {
-        var userOptional = authRepository.findByEmailAddress(email);
-        if (userOptional.isEmpty()) {
-            throw new UserNotFoundException(Messages.USER_NOT_FOUND);
-        }
-        var user = userOptional.get();
+        var isUserActive = isActiveEmail(email);
+        User user = (User) isUserActive.getData();
         user.setActive(false);
         authRepository.save(user);
         return new ActionResult(true, Messages.USER_DELETED_SUCCESS, null, null);

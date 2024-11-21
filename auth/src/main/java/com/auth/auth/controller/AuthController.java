@@ -4,6 +4,7 @@ import com.auth.auth.constants.Messages;
 import com.auth.auth.dto.*;
 import com.auth.auth.exception.DataValidationException;
 import com.auth.auth.exception.DuplicateUserException;
+import com.auth.auth.exception.InvalidAuthenticationException;
 import com.auth.auth.model.User;
 import com.auth.auth.service.AuthService;
 import com.auth.auth.service.EmailService;
@@ -66,11 +67,12 @@ public class AuthController {
     public ResponseEntity<ActionResult> login(@RequestBody LoginRequest credentials) {
         var userNamePasswordToken = new UsernamePasswordAuthenticationToken(credentials.getEmailAddress(), credentials.getPassword());
         Authentication authentication = authenticationManager.authenticate(userNamePasswordToken);
-        if (authentication.isAuthenticated()) {
+        var isActiveEmail = userManagerService.isActiveEmail(credentials.getEmailAddress());
+        if (authentication.isAuthenticated() && isActiveEmail.getStatus()) {
             var authResult = authService.login(credentials);
             return new ResponseEntity<>(authResult, HttpStatus.OK);
         }
-        throw new RuntimeException("Authentication failed");
+        throw new InvalidAuthenticationException(Messages.INVALID_LOGIN_ATTEMPT);
     }
 
     @PostMapping("/refresh")
