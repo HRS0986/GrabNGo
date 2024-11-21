@@ -26,9 +26,6 @@ public class AuthService {
     private final EmailService emailService;
     private final VerificationCodeRepository verificationCodeRepository;
 
-    @Value("${webapp.forget-password.url}")
-    private String forgetPasswordUrl;
-
     public AuthService(AuthRepository authRepository, PasswordEncoder passwordEncoder, JwtService jwtService, EmailService emailService, VerificationCodeRepository verificationCodeRepository) {
         this.authRepository = authRepository;
         this.passwordEncoder = passwordEncoder;
@@ -73,7 +70,7 @@ public class AuthService {
         verificationCode.setEmail(email);
         verificationCode.setVerificationCode(code);
         verificationCodeRepository.save(verificationCode);
-        emailService.sendForgetPasswordEmail(email, code, forgetPasswordUrl);
+        emailService.sendForgetPasswordEmail(email, code);
         return new ActionResult(true, Messages.EMAIL_SEND_SUCCESS, null, null);
     }
 
