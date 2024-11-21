@@ -47,6 +47,8 @@ public class CategoryController {
         return ResponseEntity.notFound().build();
     }
 
+
+
     @DeleteMapping("/{categoryId}")
     public ResponseEntity<Void> softDeleteCategory(@PathVariable Integer categoryId) {
         boolean deleted = categoryService.softDeleteCategory(categoryId);

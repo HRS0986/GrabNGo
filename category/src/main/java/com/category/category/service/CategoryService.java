@@ -5,6 +5,7 @@ import com.category.category.model.Category;
 import com.category.category.repo.CategoryRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.List;
 import java.util.Optional;
@@ -12,9 +13,14 @@ import java.util.stream.Collectors;
 
 @Service
 public class CategoryService {
+    private final WebClient webClient;
 
     @Autowired
     private CategoryRepo categoryRepo;
+
+    public CategoryService(WebClient webClient) {
+        this.webClient = webClient;
+    }
 
     public CategoryDTO addCategory(CategoryDTO categoryDTO) {
         Category category = new Category();
