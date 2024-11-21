@@ -10,8 +10,10 @@ import java.util.Optional;
 public interface AuthRepository extends JpaRepository<User, Integer> {
 
     @Query("SELECT u FROM User u WHERE u.emailAddress = ?1")
-    Optional<User> findByEmailAddress(String email);
+    Optional<User> findByEmailAddress(String emailAddress);
 
+    @Query("SELECT u FROM User u WHERE u.nic = ?1")
+    Optional<User> findByNic(String nic);
 }
 
 
