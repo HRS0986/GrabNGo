@@ -81,7 +81,7 @@ public ResponseEntity<SuccessResponse<List<ProductDto>>> getProducts(
         return new ResponseEntity<>(success, HttpStatus.OK);
     }
 
-    @PutMapping("deleteByCategory")
+    @PutMapping("/deleteByCategory")
     public ResponseEntity<SuccessResponse<ProductDto>> deleteProductsByCategoryId(@RequestParam int categoryId,@RequestParam boolean isDeleted) {
         Map<String,Object> datamap = productService.deleteProductsByCategory(categoryId,isDeleted);
         String message = (String) datamap.get("messege");

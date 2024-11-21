@@ -1,5 +1,4 @@
 package com.category.category.controller;
-
 import com.category.category.dto.CategoryDTO;
 import com.category.category.service.CategoryService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,7 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/categories")
+@RequestMapping("/api/v1/categories")
 public class CategoryController {
 
     @Autowired
@@ -28,7 +27,7 @@ public class CategoryController {
     }
 
     @GetMapping("/{categoryId}")
-    public ResponseEntity<CategoryDTO> getCategoryById(@PathVariable Integer categoryId) {
+    public ResponseEntity<CategoryDTO> getCategoryById(@PathVariable int categoryId) {
         CategoryDTO category = categoryService.getCategoryById(categoryId);
         if (category != null) {
             return ResponseEntity.ok(category);
@@ -38,7 +37,7 @@ public class CategoryController {
 
     @PutMapping("/{categoryId}")
     public ResponseEntity<CategoryDTO> updateCategory(
-            @PathVariable Integer categoryId,
+            @PathVariable int categoryId,
             @RequestBody CategoryDTO categoryDTO) {
         CategoryDTO updatedCategory = categoryService.updateCategory(categoryId, categoryDTO);
         if (updatedCategory != null) {
@@ -47,15 +46,13 @@ public class CategoryController {
         return ResponseEntity.notFound().build();
     }
 
-
-
-    @DeleteMapping("/{categoryId}")
-    public ResponseEntity<Void> softDeleteCategory(@PathVariable Integer categoryId) {
-        boolean deleted = categoryService.softDeleteCategory(categoryId);
-        if (deleted) {
+    @PutMapping()
+    public ResponseEntity<Void> TrashOrRestore(@RequestParam int categoryId) {
+        boolean deleted = categoryService.softDeleteOrRestoreCategory(categoryId);
+//        if (deleted) {
             return ResponseEntity.noContent().build();
-        }
-        return ResponseEntity.notFound().build();
+//        }
+//        return ResponseEntity.notFound().build();
     }
 }
 
