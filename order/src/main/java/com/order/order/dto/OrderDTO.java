@@ -19,6 +19,5 @@ public class OrderDTO {
     private LocalDateTime createdDateTime;
     private Double discount;
 
-
     private List<OrderItemDTO> orderItems;
 }
