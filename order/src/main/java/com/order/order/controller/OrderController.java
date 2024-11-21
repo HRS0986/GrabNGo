@@ -1,10 +1,9 @@
 package com.order.order.controller;
 
-import com.order.order.dto.OrderRequest;
+import com.order.order.dto.OrderDTO;
 import com.order.order.dto.OrderResponse;
-import com.order.order.model.Order;
 import com.order.order.service.OrderService;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,44 +11,63 @@ import java.util.List;
 
 @RestController
 @CrossOrigin
-@RequestMapping("/order")
+@RequestMapping("/api/order")
 public class OrderController {
 
-    @Autowired
-    private OrderService orderService;
+    private final OrderService orderService;
 
-
-
-    @GetMapping ("/getOrders")
-    public List<Order> getOrders() {
-        return orderService.getOrders();
+    // Constructor-based dependency injection
+    public OrderController(OrderService orderService) {
+        this.orderService = orderService;
     }
 
-    @PostMapping("/placeOrder")
-    public ResponseEntity<OrderResponse> placeOrder(@RequestBody OrderRequest orderRequest) {
-        OrderResponse orderResponse = orderService.placeOrder(orderRequest);
-        return ResponseEntity.ok(orderResponse);
+    @GetMapping
+    public ResponseEntity<List<OrderDTO>> getAllOrders() {
+        List<OrderDTO> orders = orderService.getAllOrders();
+        return new ResponseEntity<>(orders, HttpStatus.OK);
     }
-    @GetMapping("/getOrders/{userId}")
-    public ResponseEntity<List<OrderResponse>> getOrdersByUserId(@PathVariable int userId) {
-        List<OrderResponse> orders = orderService.getOrdersByUserId(userId);
+    @PostMapping
+    public ResponseEntity<OrderDTO> placeOrder(@RequestBody OrderDTO orderDTO) {
+        OrderDTO placedOrder = orderService.placeOrder(orderDTO);
+        return ResponseEntity.ok(orderDTO);
+    }
+    @PatchMapping("/{orderId}")
+    public ResponseEntity<OrderDTO> changeOrderStatus(@PathVariable int orderId, @RequestBody String newStatus) {
+        OrderDTO updatedOrder = orderService.changeOrderStatus(orderId, newStatus);
+        return new ResponseEntity<>(updatedOrder, HttpStatus.OK);
+    }
+    @GetMapping("/orders/filter")
+    public ResponseEntity<List<OrderResponse>> filterOrders(
+            @RequestParam(required = false) Integer userId,
+            @RequestParam(required = false) String status) {
+        List<OrderResponse> orders = orderService.filterOrders(userId, status);
         return ResponseEntity.ok(orders);
     }
-
-    @PutMapping("/updateStatus/{orderId}")
-    public ResponseEntity<OrderResponse> updateOrderStatus(@PathVariable int orderId, @RequestBody String status) {
-        OrderResponse updatedOrder = orderService.updateOrderStatus(orderId, status);
-        return ResponseEntity.ok(updatedOrder);
-    }
-    @GetMapping("/getOrdersByStatus/{status}")
-    public ResponseEntity<List<OrderResponse>> getOrdersByStatus(@PathVariable String status) {
-        List<OrderResponse> orders = orderService.getOrdersByStatus(status);
-        return ResponseEntity.ok(orders);
-    }
-    @PutMapping("/{orderId}/cancel")
+    @PutMapping("/{orderId}")
     public OrderResponse cancelOrder(@PathVariable int orderId) {
         return orderService.cancelOrder(orderId);
     }
 
+    @GetMapping("/{orderId}")
+    public ResponseEntity<OrderDTO> getOrderDetails(@PathVariable int orderId) {  // Changed to Long if orderId is Long
+        OrderDTO orderDTO = orderService.getOrderById(orderId);
 
+        if (orderDTO != null) {
+            return ResponseEntity.ok(orderDTO);  // Return 200 with the order details if found
+        } else {
+            return ResponseEntity.notFound().build();  // Return 404 if the order is not found
+        }
+    }
 }
+
+
+
+
+
+
+
+
+
+
+
+
