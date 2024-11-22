@@ -15,6 +15,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.Optional;
 
@@ -29,6 +30,9 @@ public class UserManagerService implements UserDetailsService {
 
     @Autowired
     private ModelMapper modelMapper;
+
+    @Autowired
+    private WebClient.Builder webClientBuilder;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
