@@ -100,10 +100,16 @@ public class UserManagerService implements UserDetailsService {
         return new ActionResult(true, Messages.USER_UPDATED_SUCCESS, null, null);
     }
 
-    public ActionResult deleteProfile(String email) {
+    public ActionResult deleteUser(String email) {
         var isUserActive = isActiveEmail(email);
         User user = (User) isUserActive.getData();
         user.setActive(false);
+        webClientBuilder.build()
+                .delete()
+                .uri("http://localhost:8082/api/v1/cart/user/" + user.getUserId())
+                .retrieve()
+                .bodyToMono(Void.class)
+                .block();
         authRepository.save(user);
         return new ActionResult(true, Messages.USER_DELETED_SUCCESS, null, null);
     }
