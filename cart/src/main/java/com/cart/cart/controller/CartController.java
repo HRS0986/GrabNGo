@@ -11,43 +11,47 @@ import java.util.List;
 
 @RestController
 @CrossOrigin
-@RequestMapping("api/cart")
+@RequestMapping("api/v1/cart")
 public class CartController {
 
-    @Autowired
-    private CartService cartService;
+    private final CartService cartService;
 
-    // Get all carts
+    public CartController(CartService cartService) {
+        this.cartService = cartService;
+    }
+
     @GetMapping
     public List<CartDTO> getAllCarts() {
         return cartService.getAllCarts();
     }
 
-    // Get cart by ID
     @GetMapping("/{id}")
     public ResponseEntity<CartDTO> getCartById(@PathVariable int id) {
         CartDTO cart = cartService.getCartById(id);
         return ResponseEntity.ok(cart);
     }
 
-    // Create a new cart
     @PostMapping
     public ResponseEntity<CartDTO> createCart(@RequestBody CartDTO cartDTO) {
         CartDTO createdCart = cartService.createCart(cartDTO);
         return new ResponseEntity<>(createdCart, HttpStatus.CREATED);
     }
 
-    // Update an existing cart
     @PutMapping("/{id}")
     public ResponseEntity<CartDTO> updateCart(@PathVariable int id, @RequestBody CartDTO cartDTO) {
         CartDTO updatedCart = cartService.updateCart(id, cartDTO);
         return ResponseEntity.ok(updatedCart);
     }
 
-    // Soft delete a cart (set isActive to false)
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> softDeleteCart(@PathVariable int id) {
         cartService.softDeleteCart(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping("/user/{id}")
+    public ResponseEntity<Void> deleteCartByUserId(@PathVariable int id) {
+        cartService.deleteByUserId(id);
         return ResponseEntity.noContent().build();
     }
 }
