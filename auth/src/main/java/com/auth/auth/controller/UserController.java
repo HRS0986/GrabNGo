@@ -47,7 +47,7 @@ public class UserController {
 
     @DeleteMapping("/")
     public ResponseEntity<ActionResult> deleteProfile(@RequestBody String email) {
-        var result = userManagerService.deleteProfile(email);
+        var result = userManagerService.deleteUser(email);
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
 

@@ -11,12 +11,10 @@ import com.auth.auth.model.User;
 import com.auth.auth.repository.AuthRepository;
 import com.auth.auth.utils.VerificationCodeGenerator;
 import jakarta.mail.MessagingException;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 
 @Service
 public class AuthService {
@@ -70,6 +68,9 @@ public class AuthService {
         if (userOptional.isEmpty()) {
             throw new UserNotFoundException(Messages.USER_NOT_FOUND);
         }
+        if (!userOptional.get().isActive()) {
+            throw new UserNotFoundException(Messages.USER_NOT_FOUND);
+        }
 
         String code = VerificationCodeGenerator.generateCode();
         VerificationCode verificationCode = new VerificationCode();
@@ -119,6 +120,10 @@ public class AuthService {
 
         var userOptional = authRepository.findByEmailAddress(resetPasswordRequest.getEmail());
         if (userOptional.isEmpty()) {
+            throw new UserNotFoundException(Messages.USER_NOT_FOUND);
+        }
+
+        if (!userOptional.get().isActive()) {
             throw new UserNotFoundException(Messages.USER_NOT_FOUND);
         }
 
