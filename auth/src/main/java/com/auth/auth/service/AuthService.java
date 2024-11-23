@@ -11,8 +11,12 @@ import com.auth.auth.model.User;
 import com.auth.auth.repository.AuthRepository;
 import com.auth.auth.utils.VerificationCodeGenerator;
 import jakarta.mail.MessagingException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
+import reactor.core.publisher.Mono;
 
 import java.io.IOException;
 
@@ -24,13 +28,15 @@ public class AuthService {
     private final JwtService jwtService;
     private final EmailService emailService;
     private final VerificationCodeRepository verificationCodeRepository;
+    private final WebClient.Builder webClientBuilder;
 
-    public AuthService(AuthRepository authRepository, PasswordEncoder passwordEncoder, JwtService jwtService, EmailService emailService, VerificationCodeRepository verificationCodeRepository) {
+    public AuthService(AuthRepository authRepository, PasswordEncoder passwordEncoder, JwtService jwtService, EmailService emailService, VerificationCodeRepository verificationCodeRepository, WebClient.Builder webClientBuilder) {
         this.authRepository = authRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
         this.emailService = emailService;
         this.verificationCodeRepository = verificationCodeRepository;
+        this.webClientBuilder = webClientBuilder;
     }
 
     public ActionResult login(LoginRequest credentials) {
@@ -41,9 +47,39 @@ public class AuthService {
     }
 
     public ActionResult register(User user) {
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
-        var result = authRepository.save(user);
-        return new ActionResult(true, Messages.USER_CREATED_SUCCESS, result, null);
+        try {
+            user.setPassword(passwordEncoder.encode(user.getPassword()));
+            var savedUser = authRepository.save(user);
+            webClientBuilder.build()
+                    .post()
+                    .uri("/api/v1/cart")
+                    .bodyValue(savedUser.getUserId())
+                    .retrieve()
+                    .bodyToMono(Void.class)
+                    .block();
+
+            return new ActionResult(
+                    true,
+                    Messages.USER_CREATED_SUCCESS,
+                    savedUser,
+                    null
+            );
+
+        } catch (WebClientResponseException e) {
+            return new ActionResult(
+                    false,
+                    "Cart creation failed: " + e.getMessage(),
+                    null,
+                    e.getMessage()
+            );
+        } catch (Exception e) {
+            return new ActionResult(
+                    false,
+                    "Registration failed: " + e.getMessage(),
+                    null,
+                    e.getMessage()
+            );
+        }
     }
 
     public ActionResult tokenRefresh(RefreshTokenRequest tokenRequest) {
