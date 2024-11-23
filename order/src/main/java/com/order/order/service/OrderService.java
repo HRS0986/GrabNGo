@@ -39,27 +39,34 @@ public class OrderService {
     public OrderDTO placeOrder(OrderDTO orderDTO) {
         int userId = orderDTO.getUserId();
 
-        Integer cartId=webClientBuilder.build()
-                .get()
-                .uri("/api/v1/cart/user/"+userId)
-                .retrieve()
-                .bodyToMono(Integer.class)
-                .block();
+        try {
 
-        if (cartId == null) {
-            throw new RuntimeException("No cart found for user");
-        }
+            Integer cartId = webClientBuilder.build()
+                    .get()
+                    .uri("/api/v1/cart/user/" + userId)
+                    .retrieve()
+                    .bodyToMono(Integer.class)
+                    .block();
 
-        List<OrderItemDTO> cartItems = webClientBuilder.build()
-                .get()
-                .uri("/api/v1/cart/" + cartId + "/items") // Replace with endpoint to fetch cart items
-                .retrieve()
-                .bodyToFlux(OrderItemDTO.class)
-                .collectList()
-                .block();
+            if (cartId == null) {
+                throw new RuntimeException("No cart found for user");
+            }
 
-        if (cartItems == null || cartItems.isEmpty()) {
-            throw new RuntimeException("No items found in the cart");
+            List<OrderItemDTO> cartItems = webClientBuilder.build()
+                    .get()
+                    .uri("/api/v1/cart/" + cartId + "/items") // Replace with endpoint to fetch cart items
+                    .retrieve()
+                    .bodyToFlux(OrderItemDTO.class)
+                    .collectList()
+                    .block();
+
+            if (cartItems == null || cartItems.isEmpty()) {
+                throw new RuntimeException("No items found in the cart");
+            }
+        } catch (Exception ex) {
+            // Log the exception (consider using a logger)
+            System.err.println("Error fetching cart details: " + ex.getMessage());
+            throw new RuntimeException("Failed to retrieve cart details. Please try again later.", ex);
         }
 
         Order order = modelMapper.map(orderDTO, Order.class);
