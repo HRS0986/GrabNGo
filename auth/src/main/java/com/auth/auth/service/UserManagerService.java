@@ -106,7 +106,7 @@ public class UserManagerService implements UserDetailsService {
         user.setActive(false);
         webClientBuilder.build()
                 .delete()
-                .uri("http://localhost:8082/api/v1/cart/user/" + user.getUserId())
+                .uri("/api/v1/cart/user/" + user.getUserId())
                 .retrieve()
                 .bodyToMono(Void.class)
                 .block();
