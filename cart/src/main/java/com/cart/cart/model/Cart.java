@@ -16,18 +16,10 @@ public class Cart {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int cartId;
-
-    @Column(nullable = false)
     private int userId;
-
-    @Column(nullable = false)
-    private int totalAmount;
-
-    @Column(nullable = false)
-    private double totalPrice;
-
-    @Column(nullable = false)
-    private boolean isActive;
+    private int totalAmount = 0;
+    private double totalPrice = 0.00;
+    private boolean isActive = true;
 
     @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL, orphanRemoval = true)
     @ToString.Exclude
