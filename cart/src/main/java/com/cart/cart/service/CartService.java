@@ -1,6 +1,7 @@
 package com.cart.cart.service;
 
 import com.cart.cart.dto.CartDTO;
+import com.cart.cart.exception.ResourceNotFoundException;
 import com.cart.cart.model.Cart;
 import com.cart.cart.repo.CartRepo;
 import jakarta.transaction.Transactional;
@@ -27,38 +28,45 @@ public class CartService {
         return modelMapper.map(cartList, new TypeToken<List<CartDTO>>(){}.getType());
     }
 
-    public CartDTO getCartById(int cartId) {
-        Cart cart = cartRepo.findById(cartId)
-                .orElseThrow(() -> new RuntimeException("Cart not found"));
+    public CartDTO getCartByUserId(int userId) {
+        Cart cart = cartRepo.findByUserId(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Cart not found with the User ID " + userId));
         return modelMapper.map(cart, CartDTO.class);
     }
 
-    public CartDTO createCart(CartDTO cartDTO) {
-        Cart cart = modelMapper.map(cartDTO, Cart.class);
-        Cart savedCart = cartRepo.save(cart);
-        return modelMapper.map(savedCart, CartDTO.class);
+    public CartDTO createCart(int userId) {
+        Optional<Cart> cartOptional = cartRepo.findByUserId(userId);
+        if (cartOptional.isEmpty()) {
+            Cart cart = new Cart();
+            cart.setUserId(userId);
+            Cart savedCart = cartRepo.save(cart);
+            return modelMapper.map(savedCart, CartDTO.class);
+        }
+        return modelMapper.map(cartOptional.get(), CartDTO.class);
     }
 
-    public CartDTO updateCart(int cartId, CartDTO cartDTO) {
-        Cart existingCart = cartRepo.findById(cartId)
-                .orElseThrow(() -> new RuntimeException("Cart not found"));
-
-        // Update fields
-        existingCart.setUserId(cartDTO.getUserId());
-        existingCart.setTotalAmount(cartDTO.getTotalAmount());
-        existingCart.setTotalPrice(cartDTO.getTotalPrice());
-        existingCart.setActive(cartDTO.isActive());
-
-        Cart updatedCart = cartRepo.save(existingCart);
-        return modelMapper.map(updatedCart, CartDTO.class);
-    }
+//    public CartDTO updateCart(int cartId, CartDTO cartDTO) {
+//        Cart existingCart = cartRepo.findById(cartId)
+//                .orElseThrow(() -> new RuntimeException("Cart not found"));
+//
+//        // Update fields
+//        existingCart.setUserId(cartDTO.getUserId());
+//        existingCart.setTotalAmount(cartDTO.getTotalAmount());
+//        existingCart.setTotalPrice(cartDTO.getTotalPrice());
+//        existingCart.setActive(cartDTO.isActive());
+//
+//        Cart updatedCart = cartRepo.save(existingCart);
+//        return modelMapper.map(updatedCart, CartDTO.class);
+//    }
 
     // Soft delete a Cart (set isActive to false)
     public void softDeleteCart(int cartId) {
-        Cart cart = cartRepo.findById(cartId)
-                .orElseThrow(() -> new RuntimeException("Cart not found"));
-        cart.setActive(false);
-        cartRepo.save(cart);
+        Optional<Cart> cartOptional = cartRepo.findById(cartId);
+        if (cartOptional.isPresent()) {
+            Cart cart = cartOptional.get();
+            cart.setActive(false);
+            cartRepo.save(cart);
+        }
     }
 
     public void deleteByUserId(int id) {
