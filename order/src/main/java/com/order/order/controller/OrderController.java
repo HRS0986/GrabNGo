@@ -24,17 +24,20 @@ public class OrderController {
         List<OrderDTO> orders = orderService.getAllOrders();
         return new ResponseEntity<>(orders, HttpStatus.OK);
     }
+
     @PostMapping
     public ResponseEntity<OrderDTO> placeOrder(@RequestBody OrderDTO orderDTO) {
         OrderDTO placedOrder = orderService.placeOrder(orderDTO);
         return new ResponseEntity<>(placedOrder, HttpStatus.CREATED);
 
     }
+
     @PatchMapping("/{orderId}")
     public ResponseEntity<OrderDTO> changeOrderStatus(@PathVariable int orderId, @RequestBody String newStatus) {
         OrderDTO updatedOrder = orderService.changeOrderStatus(orderId, newStatus);
         return new ResponseEntity<>(updatedOrder, HttpStatus.OK);
     }
+
     @GetMapping("/filter")
     public ResponseEntity<List<OrderDTO>> filterOrders(
             @RequestParam(required = false) Integer userId,
