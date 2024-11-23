@@ -1,4 +1,5 @@
 package com.category.category.service;
+
 import com.category.category.dto.CategoryDTO;
 import com.category.category.exception.ResourceNotFoundException;
 import com.category.category.model.Category;
@@ -15,11 +16,13 @@ import java.util.stream.Collectors;
 @Service
 public class CategoryService {
 
-    @Autowired
-    private CategoryRepo categoryRepo;
+    private final CategoryRepo categoryRepo;
+    private final WebClient.Builder webClientBuilder;
 
-    @Autowired
-    private  WebClient.Builder webClientBuilder;
+    public CategoryService(CategoryRepo categoryRepo, WebClient.Builder webClientBuilder) {
+        this.categoryRepo = categoryRepo;
+        this.webClientBuilder = webClientBuilder;
+    }
 
     public CategoryDTO addCategory(CategoryDTO categoryDTO) {
         Category category = new Category();
@@ -62,38 +65,36 @@ public class CategoryService {
         throw new ResourceNotFoundException("Category not found");
     }
 
-public boolean softDeleteOrRestoreCategory(int categoryId) {
-    Optional<Category> categoryOptional = categoryRepo.findById(categoryId);
+    public boolean softDeleteOrRestoreCategory(int categoryId) {
+        Optional<Category> categoryOptional = categoryRepo.findById(categoryId);
 
-    if (categoryOptional.isPresent()) {
+        if (categoryOptional.isPresent()) {
 
-        Category category = categoryOptional.get();
-        if (category.getIsActive()) {
-            // Delete related products
-            deleteRelatedProducts(category.getCategoryId(),false).subscribe();
-            category.setIsActive(false);
-            categoryRepo.save(category);
-            return true;
+            Category category = categoryOptional.get();
+            if (category.getIsActive()) {
+                // Delete related products
+                deleteRelatedProducts(category.getCategoryId(), false).subscribe();
+                category.setIsActive(false);
+                categoryRepo.save(category);
+                return true;
+            } else {
+                // restore related products
+                deleteRelatedProducts(category.getCategoryId(), true).subscribe();
+                category.setIsActive(true);
+                categoryRepo.save(category);
+                return true;
+            }
         }
-        else{
-            // restore related products
-            deleteRelatedProducts(category.getCategoryId(),true).subscribe();
-            category.setIsActive(true);
-            categoryRepo.save(category);
-            return true;
-        }
+        return false;
     }
-    return false;
-}
 
-    public Mono<Void> deleteRelatedProducts(int categoryId , boolean isDeleted) {
+    public Mono<Void> deleteRelatedProducts(int categoryId, boolean isDeleted) {
         return webClientBuilder.build()
                 .put()
-                .uri("http://localhost:8085/api/v1/product/deleteByCategory?categoryId={categoryId}&isDeleted={isDeleted}", categoryId, isDeleted)
+                .uri("/product/deleteByCategory?categoryId={categoryId}&isDeleted={isDeleted}", categoryId, isDeleted)
                 .retrieve()
                 .bodyToMono(Void.class);
     }
-
 
     private CategoryDTO mapToDTO(Category category) {
         CategoryDTO categoryDTO = new CategoryDTO();

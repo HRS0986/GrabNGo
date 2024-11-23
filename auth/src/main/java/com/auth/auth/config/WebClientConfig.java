@@ -11,7 +11,7 @@ public class WebClientConfig {
     @Bean
     public WebClient.Builder webClientBuilder() {
         return WebClient.builder()
-                .baseUrl("http://localhost:8082")  // Set base URL
+                .baseUrl("http://cart/api/v1")  // Set base URL
                 .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
     }
 }
