@@ -89,7 +89,7 @@ public boolean softDeleteOrRestoreCategory(int categoryId) {
     public Mono<Void> deleteRelatedProducts(int categoryId , boolean isDeleted) {
         return webClientBuilder.build()
                 .put()
-                .uri("http://localhost:8085/api/v1/product/deleteByCategory?categoryId={categoryId}&isDeleted={isDeleted}", categoryId, isDeleted)
+                .uri("http://product/api/v1/product/deleteByCategory?categoryId={categoryId}&isDeleted={isDeleted}", categoryId, isDeleted)
                 .retrieve()
                 .bodyToMono(Void.class);
     }
