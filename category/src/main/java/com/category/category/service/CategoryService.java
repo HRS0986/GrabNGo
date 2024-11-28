@@ -89,10 +89,19 @@ public boolean softDeleteOrRestoreCategory(int categoryId) {
     public Mono<Void> deleteRelatedProducts(int categoryId , boolean isDeleted) {
         return webClientBuilder.build()
                 .put()
-                .uri("http://product/api/v1/product/deleteByCategory?categoryId={categoryId}&isDeleted={isDeleted}", categoryId, isDeleted)
+                .uri("http://apigateway/api/v1/product/deleteByCategory?categoryId={categoryId}&isDeleted={isDeleted}", categoryId, isDeleted)
                 .retrieve()
                 .bodyToMono(Void.class);
     }
+
+//    public Mono<Void> deleteRelatedProducts(int categoryId, boolean isDeleted) {
+//        return webClientBuilder.build()
+//                .put()
+//                .uri("lb://product/api/v1/product/deleteByCategory?categoryId={categoryId}&isDeleted={isDeleted}",
+//                        categoryId, isDeleted)
+//                .retrieve()
+//                .bodyToMono(Void.class);
+//    }
 
 
     private CategoryDTO mapToDTO(Category category) {
