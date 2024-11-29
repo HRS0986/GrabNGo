@@ -63,6 +63,12 @@ public class AuthController {
         return new ResponseEntity<>(result, HttpStatus.CREATED);
     }
 
+    @GetMapping("/validate")
+    public String validateToken(@RequestParam("token") String token) {
+//          service.validateToken(token);
+          return "Token is valid";
+    }
+
     @PostMapping("/login")
     public ResponseEntity<ActionResult> login(@RequestBody LoginRequest credentials) {
         var userNamePasswordToken = new UsernamePasswordAuthenticationToken(credentials.getEmailAddress(), credentials.getPassword());
