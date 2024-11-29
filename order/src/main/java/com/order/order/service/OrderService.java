@@ -1,14 +1,12 @@
 package com.order.order.service;
 
 import com.order.order.dto.OrderDTO;
-import com.order.order.dto.OrderItemDTO;
 import com.order.order.model.Order;
 import com.order.order.model.OrderItem;
 import com.order.order.repository.OrderRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.List;
 import java.util.Optional;
@@ -20,15 +18,13 @@ public class OrderService {
 
     private final OrderRepository orderRepository;
     private final ModelMapper modelMapper;
-    private final WebClient.Builder webClientBuilder;
 
-    public OrderService(OrderRepository orderRepository, ModelMapper modelMapper, WebClient.Builder webClientBuilder) {
+    public OrderService(OrderRepository orderRepository, ModelMapper modelMapper) {
         this.orderRepository = orderRepository;
         this.modelMapper = modelMapper;
-        this.webClientBuilder = webClientBuilder;
     }
 
-
+    //get all orders
     public List<OrderDTO> getAllOrders() {
         List<Order> orders = orderRepository.findAll();
         return orders.stream()
@@ -37,38 +33,6 @@ public class OrderService {
     }
 
     public OrderDTO placeOrder(OrderDTO orderDTO) {
-        int userId = orderDTO.getUserId();
-
-        try {
-
-            Integer cartId = webClientBuilder.build()
-                    .get()
-                    .uri("/api/v1/cart/user/" + userId)
-                    .retrieve()
-                    .bodyToMono(Integer.class)
-                    .block();
-
-            if (cartId == null) {
-                throw new RuntimeException("No cart found for user");
-            }
-
-            List<OrderItemDTO> cartItems = webClientBuilder.build()
-                    .get()
-                    .uri("/api/v1/cart/" + cartId + "/items") // Replace with endpoint to fetch cart items
-                    .retrieve()
-                    .bodyToFlux(OrderItemDTO.class)
-                    .collectList()
-                    .block();
-
-            if (cartItems == null || cartItems.isEmpty()) {
-                throw new RuntimeException("No items found in the cart");
-            }
-        } catch (Exception ex) {
-            // Log the exception (consider using a logger)
-            System.err.println("Error fetching cart details: " + ex.getMessage());
-            throw new RuntimeException("Failed to retrieve cart details. Please try again later.", ex);
-        }
-
         Order order = modelMapper.map(orderDTO, Order.class);
         List<OrderItem> orderItems = orderDTO.getOrderItems().stream()
                 .map(orderItemDTO -> {
