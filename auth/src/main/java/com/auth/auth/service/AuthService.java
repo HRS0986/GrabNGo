@@ -52,7 +52,7 @@ public class AuthService {
             var savedUser = authRepository.save(user);
             webClientBuilder.build()
                     .post()
-                    .uri("/api/v1/cart")
+                    .uri("http://apigateway/api/v1/cart")
                     .bodyValue(savedUser.getUserId())
                     .retrieve()
                     .bodyToMono(Void.class)
