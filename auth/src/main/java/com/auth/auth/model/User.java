@@ -2,8 +2,13 @@ package com.auth.auth.model;
 
 import com.auth.auth.constants.Messages;
 import com.auth.auth.enums.UserRole;
-import jakarta.persistence.*;
-import jakarta.validation.constraints.*;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

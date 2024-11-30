@@ -1,4 +1,5 @@
 package com.product.product.service;
+
 import com.product.product.entity.Product;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -12,6 +13,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
+
 import java.util.ArrayList;
 import java.util.List;
 

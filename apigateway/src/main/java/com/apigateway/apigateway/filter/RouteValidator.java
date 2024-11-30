@@ -1,6 +1,8 @@
 package com.apigateway.apigateway.filter;
+
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Component;
+
 import java.util.List;
 import java.util.function.Predicate;
 
@@ -14,6 +16,6 @@ public class RouteValidator {
 
     public Predicate<ServerHttpRequest> isSecured =
             request -> openApiEndpoints
-                    . stream()
+                    .stream()
                     .noneMatch(uri -> request.getURI().getPath().contains(uri));
 }

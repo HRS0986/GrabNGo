@@ -10,7 +10,7 @@ import org.springframework.http.HttpStatus;
 @AllArgsConstructor
 @Data
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class SuccessResponse<T>{
+public class SuccessResponse<T> {
     private String msg;
     private T data;
     private HttpStatus status;

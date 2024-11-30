@@ -7,8 +7,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 @ControllerAdvice
-public class GlobalExceptionHandler
-{
+public class GlobalExceptionHandler {
     @ExceptionHandler(AuthException.class)
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
     public ResponseEntity<String> handleAuthException(AuthException ex) {

@@ -24,7 +24,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.util.Set;
 
 @RestController
@@ -66,7 +65,7 @@ public class AuthController {
     @GetMapping("/validate")
     public String validateToken(@RequestParam("token") String token) {
 //          service.validateToken(token);
-          return "Token is valid";
+        return "Token is valid";
     }
 
     @PostMapping("/login")

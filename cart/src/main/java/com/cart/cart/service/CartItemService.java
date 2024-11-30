@@ -10,7 +10,6 @@ import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -70,7 +69,7 @@ public class CartItemService {
 
         int currentAmount = existingCartItem.getQuantity();
         int diff = cartItemDTO.getQuantity() - currentAmount;
-        int newTotalCartItemsAmount =  cart.getTotalAmount() + diff;
+        int newTotalCartItemsAmount = cart.getTotalAmount() + diff;
 
         existingCartItem.setQuantity(cartItemDTO.getQuantity());
         CartItem updatedCartItem = cartItemRepo.save(existingCartItem);

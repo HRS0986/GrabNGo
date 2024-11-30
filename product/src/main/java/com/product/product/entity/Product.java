@@ -1,4 +1,5 @@
 package com.product.product.entity;
+
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -31,8 +32,8 @@ public class Product {
     private int categoryId;
 
     @Column(nullable = false)
-    private boolean isAvailable ;
+    private boolean isAvailable;
 
     @Column(nullable = false)
-    private boolean isActive ;
+    private boolean isActive;
 }

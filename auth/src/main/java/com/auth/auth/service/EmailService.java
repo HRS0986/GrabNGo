@@ -26,7 +26,7 @@ public class EmailService {
     @Value("${mail.sender.email}")
     private String senderEmail;
 
-    public EmailService(JavaMailSender javaMailSender){
+    public EmailService(JavaMailSender javaMailSender) {
         mailSender = javaMailSender;
     }
 
