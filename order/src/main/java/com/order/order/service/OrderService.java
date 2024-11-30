@@ -34,6 +34,8 @@ public class OrderService {
 
     public OrderDTO placeOrder(OrderDTO orderDTO) {
         Order order = modelMapper.map(orderDTO, Order.class);
+        order.setStatus("Accepted");
+
         List<OrderItem> orderItems = orderDTO.getOrderItems().stream()
                 .map(orderItemDTO -> {
                     OrderItem orderItem = modelMapper.map(orderItemDTO, OrderItem.class);
@@ -46,6 +48,7 @@ public class OrderService {
         Order savedOrder = orderRepository.save(order);
         return modelMapper.map(savedOrder, OrderDTO.class);
     }
+
 
     //change order status
     public OrderDTO changeOrderStatus(int orderId, String newStatus) {

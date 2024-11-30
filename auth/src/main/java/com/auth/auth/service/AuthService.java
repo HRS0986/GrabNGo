@@ -11,12 +11,10 @@ import com.auth.auth.model.User;
 import com.auth.auth.repository.AuthRepository;
 import com.auth.auth.utils.VerificationCodeGenerator;
 import jakarta.mail.MessagingException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
-import reactor.core.publisher.Mono;
 
 import java.io.IOException;
 
