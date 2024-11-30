@@ -11,6 +11,7 @@ import com.auth.auth.repository.VerificationCodeRepository;
 import com.auth.auth.utils.ActionResult;
 import com.auth.auth.utils.VerificationCodeGenerator;
 import jakarta.mail.MessagingException;
+import org.springframework.http.HttpHeaders;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -48,9 +49,11 @@ public class AuthService {
         try {
             user.setPassword(passwordEncoder.encode(user.getPassword()));
             var savedUser = authRepository.save(user);
+            var token = jwtService.generateAccessToken(savedUser.getEmailAddress());
             webClientBuilder.build()
                     .post()
                     .uri("http://apigateway/api/v1/cart")
+                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
                     .bodyValue(savedUser.getUserId())
                     .retrieve()
                     .bodyToMono(Void.class)
