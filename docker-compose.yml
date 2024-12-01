@@ -7,7 +7,7 @@ services:
     ports:
       - "33061:3306"
     environment:
-      MYSQL_ROOT_PASSWORD: Sewmini/01831
+      MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: OrderDB
     restart: always
 
@@ -50,3 +50,93 @@ services:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: AuthDB
     restart: always
+
+  discovery-server:
+    container_name: discovery-server
+    build:
+      context: ./discovery/
+    ports:
+      - "8761:8761"
+
+  api-gateway:
+    container_name: api-gateway
+    build:
+      context: ./apigateway/
+    environment:
+      - server.port=80
+    ports:
+      - "8080:80"
+    expose:
+      - "80"
+    depends_on:
+      - discovery-server
+
+  auth-service:
+    container_name: auth-service
+    build:
+      context: ./auth/
+    environment:
+      - server.port=80
+    ports:
+      - "8082:80"
+    expose:
+      - "80"
+    depends_on:
+      - discovery-server
+      - auth-db
+
+  order-service:
+    container_name: order-service
+    build:
+      context: ./order/
+    environment:
+      - server.port=80
+    ports:
+      - "8083:80"
+    expose:
+      - "80"
+    depends_on:
+      - discovery-server
+      - order-db
+
+  product-service:
+    container_name: product-service
+    build:
+      context: ./product/
+    environment:
+      - server.port=80
+    ports:
+      - "8084:80"
+    expose:
+      - "80"
+    depends_on:
+      - discovery-server
+      - product-db
+
+  cart-service:
+    container_name: cart-service
+    build:
+      context: ./cart/
+    environment:
+      - server.port=80
+    ports:
+      - "8085:80"
+    expose:
+      - "80"
+    depends_on:
+      - discovery-server
+      - cart-db
+
+  category-service:
+    container_name: category-service
+    build:
+      context: ./category/
+    environment:
+      - server.port=80
+    ports:
+      - "8086:80"
+    expose:
+      - "80"
+    depends_on:
+      - discovery-server
+      - category-db
