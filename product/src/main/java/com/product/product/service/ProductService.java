@@ -41,7 +41,6 @@ public class ProductService {
         } else {
             throw new ResourceNotFoundException("Product with id " + id + " not found");
         }
-
     }
 
     public ProductDto saveProduct(ProductDto productDto) {
