@@ -1,7 +1,11 @@
 package com.auth.auth.utils;
 
 import com.auth.auth.constants.Messages;
+import com.auth.auth.exception.DataValidationException;
+import com.auth.auth.exception.DuplicateUserException;
+import com.auth.auth.exception.InvalidAuthenticationException;
 import com.auth.auth.exception.UserNotFoundException;
+import io.jsonwebtoken.security.SignatureException;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -28,8 +32,36 @@ public class ErrorHandler {
     @ExceptionHandler(UserNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ResponseEntity<ActionResult> handleUserNotFound(UserNotFoundException ex) {
-        var result = new ActionResult(false, ex.getMessage(), null, null);
+        var result = new ActionResult(false, ex.getMessage(), null, ex.getMessage());
         return new ResponseEntity<>(result, HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(DuplicateUserException.class)
+    @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
+    public ResponseEntity<ActionResult> handleDuplicateUser(DuplicateUserException ex) {
+        var result = new ActionResult(false, ex.getMessage(), null, ex.getMessage());
+        return new ResponseEntity<>(result, HttpStatus.UNPROCESSABLE_ENTITY);
+    }
+
+    @ExceptionHandler(InvalidAuthenticationException.class)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public ResponseEntity<ActionResult> handleInvalidAuthentication(InvalidAuthenticationException ex) {
+        var result = new ActionResult(false, ex.getMessage(), null, ex.getMessage());
+        return new ResponseEntity<>(result, HttpStatus.UNAUTHORIZED);
+    }
+
+    @ExceptionHandler(SignatureException.class)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public ResponseEntity<ActionResult> handleSignatureException(SignatureException ex) {
+        var result = new ActionResult(false, Messages.TOKEN_INVALID, null, Messages.TOKEN_INVALID);
+        return new ResponseEntity<>(result, HttpStatus.UNAUTHORIZED);
+    }
+
+    @ExceptionHandler(DataValidationException.class)
+    @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
+    public ResponseEntity<ActionResult> handleDataValidationException(DataValidationException ex) {
+        var result = new ActionResult(false, ex.getMessage(), null, ex.getMessage());
+        return new ResponseEntity<>(result, HttpStatus.UNPROCESSABLE_ENTITY);
     }
 
 }

@@ -7,6 +7,6 @@ import java.util.Optional;
 
 public interface CategoryRepo extends JpaRepository<Category, Integer> {
 
-    Optional<Category> findByCategoryIdAndIsActiveTrue(Integer categoryId);
+    Optional<Category> findByCategoryIdAndIsActiveTrue(int categoryId);
 
 }

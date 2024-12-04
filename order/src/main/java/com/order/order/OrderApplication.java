@@ -11,8 +11,9 @@ public class OrderApplication {
     public static void main(String[] args) {
         SpringApplication.run(OrderApplication.class, args);
     }
+
     @Bean
-    public ModelMapper ModelMapper(){
+    public ModelMapper ModelMapper() {
         return new ModelMapper();
     }
 

@@ -1,7 +1,9 @@
 package com.auth.auth.controller;
 
+import com.auth.auth.constants.Messages;
 import com.auth.auth.dto.ChangePasswordRequest;
 import com.auth.auth.dto.UserDTO;
+import com.auth.auth.exception.UserNotFoundException;
 import com.auth.auth.service.UserManagerService;
 import com.auth.auth.utils.ActionResult;
 import org.springframework.http.HttpStatus;
@@ -9,7 +11,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/user")
+@RequestMapping("/api/v1/user")
+@CrossOrigin(origins = "*")
 public class UserController {
 
     private final UserManagerService userManagerService;
@@ -31,6 +34,9 @@ public class UserController {
     @GetMapping("/{email}")
     public ResponseEntity<ActionResult> getProfile(@PathVariable String email) {
         var result = userManagerService.getProfile(email);
+        if (!result.getStatus()) {
+            throw new UserNotFoundException(Messages.USER_NOT_FOUND);
+        }
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
 
@@ -42,7 +48,7 @@ public class UserController {
 
     @DeleteMapping("/")
     public ResponseEntity<ActionResult> deleteProfile(@RequestBody String email) {
-        var result = userManagerService.deleteProfile(email);
+        var result = userManagerService.deleteUser(email);
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
 

@@ -1,4 +1,5 @@
 package com.product.product.service;
+
 import com.product.product.dto.ProductDto;
 import com.product.product.entity.Product;
 import com.product.product.exception.ResourceNotFoundException;
@@ -8,6 +9,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -36,8 +38,7 @@ public class ProductService {
         Optional<Product> product = productRepository.findById(id);
         if (product.isPresent() && product.get().isActive()) {
             return modelMapper.map(product, ProductDto.class);
-        }
-        else{
+        } else {
             throw new ResourceNotFoundException("Product with id " + id + " not found");
         }
     }
@@ -48,7 +49,7 @@ public class ProductService {
         return modelMapper.map(savedProduct, ProductDto.class);
     }
 
-    public ProductDto updateProduct(int id,ProductDto productDto) {
+    public ProductDto updateProduct(int id, ProductDto productDto) {
         Optional<Product> product = productRepository.findById(id);
         if (product.isPresent()) {
 
@@ -65,46 +66,43 @@ public class ProductService {
 
             return modelMapper.map(updatedProduct, ProductDto.class);
 
-        }
-        else{
+        } else {
             throw new ResourceNotFoundException("Product with id " + productDto.getProductId() + " not found");
         }
     }
 
-    public Map<String, Object>  deleteOrTrashProduct(int id) {
+    public Map<String, Object> deleteOrTrashProduct(int id) {
         Optional<Product> product = productRepository.findById(id);
         if (product.isPresent()) {
-            Map<String,Object> dataMap = new HashMap<>();
+            Map<String, Object> dataMap = new HashMap<>();
             if (product.get().isActive()) {
                 productRepository.softDeleteById(id);
 //                ProductDto deletedProduct = modelMapper.map(product.get(), ProductDto.class);
 //                dataMap.put("productDto", deletedProduct);
-                dataMap.put("message", "Product deleted successfully");
-            }
-            else {
+                dataMap.put("messege", "Product deleted successfully");
+            } else {
                 productRepository.restoreProductById(id);
 //                ProductDto restoredProduct = modelMapper.map(product.get(), ProductDto.class);
 //                dataMap.put("productDto", restoredProduct);
-                dataMap.put("message", "Product restored successfully");
+                dataMap.put("messege", "Product restored successfully");
             }
             return dataMap;
-        }
-        else{
+        } else {
             throw new ResourceNotFoundException("Product with id " + id + " not found");
         }
     }
 
     @Transactional
-    public Map<String,Object> deleteProductsByCategory(int categoryId,boolean isDeleted) {
-        Map<String,Object> dataMap = new HashMap<>();
+    public Map<String, Object> deleteProductsByCategory(int categoryId, boolean isDeleted) {
+        Map<String, Object> dataMap = new HashMap<>();
         if (isDeleted) {
             productRepository.restoreByCategoryId(categoryId);
-            dataMap.put("message", "Products restored successfully");
-        }
-        else {
+            dataMap.put("messege", "Products restored successfully");
+        } else {
             productRepository.softDeleteByCategoryId(categoryId);
-            dataMap.put("message", "Products deleted successfully");
+            dataMap.put("messege", "Products deleted successfully");
         }
         return dataMap;
     }
+
 }

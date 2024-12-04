@@ -19,6 +19,6 @@ public class ProductDto {
     private String imageUrl;
     private int categoryId;
     private boolean isAvailable = true;
-    private boolean isActive=true;
+    private boolean isActive = true;
 
 }

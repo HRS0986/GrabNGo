@@ -1,55 +1,56 @@
 package com.category.category.controller;
 
 import com.category.category.dto.CategoryDTO;
+import com.category.category.responses.SuccessResponse;
 import com.category.category.service.CategoryService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/categories")
+@RequestMapping("/api/v1/categories")
+@CrossOrigin(origins = "*")
 public class CategoryController {
 
     @Autowired
     private CategoryService categoryService;
 
     @PostMapping
-    public ResponseEntity<CategoryDTO> addCategory(@RequestBody CategoryDTO categoryDTO) {
+    public ResponseEntity<SuccessResponse<CategoryDTO>> addCategory(@RequestBody CategoryDTO categoryDTO) {
         CategoryDTO createdCategory = categoryService.addCategory(categoryDTO);
-        return ResponseEntity.ok(createdCategory);
+        SuccessResponse<CategoryDTO> success = new SuccessResponse<>("Category added", createdCategory, HttpStatus.CREATED);
+        return new ResponseEntity<>(success, HttpStatus.CREATED);
     }
 
     @GetMapping
-    public ResponseEntity<List<CategoryDTO>> getAllCategories() {
+    public ResponseEntity<SuccessResponse<List<CategoryDTO>>> getAllCategories() {
         List<CategoryDTO> categories = categoryService.getAllCategories();
-        return ResponseEntity.ok(categories);
+        SuccessResponse<List<CategoryDTO>> success = new SuccessResponse<>("fetch categories", categories, HttpStatus.OK);
+        return new ResponseEntity<>(success, HttpStatus.OK);
     }
 
     @GetMapping("/{categoryId}")
-    public ResponseEntity<CategoryDTO> getCategoryById(@PathVariable Integer categoryId) {
+    public ResponseEntity<SuccessResponse<CategoryDTO>> getCategoryById(@PathVariable int categoryId) {
         CategoryDTO category = categoryService.getCategoryById(categoryId);
-        if (category != null) {
-            return ResponseEntity.ok(category);
-        }
-        return ResponseEntity.notFound().build();
+        SuccessResponse<CategoryDTO> success = new SuccessResponse<>("Category found", category, HttpStatus.OK);
+        return new ResponseEntity<>(success, HttpStatus.OK);
     }
 
     @PutMapping("/{categoryId}")
-    public ResponseEntity<CategoryDTO> updateCategory(
-            @PathVariable Integer categoryId,
+    public ResponseEntity<SuccessResponse<CategoryDTO>> updateCategory(
+            @PathVariable int categoryId,
             @RequestBody CategoryDTO categoryDTO) {
         CategoryDTO updatedCategory = categoryService.updateCategory(categoryId, categoryDTO);
-        if (updatedCategory != null) {
-            return ResponseEntity.ok(updatedCategory);
-        }
-        return ResponseEntity.notFound().build();
+        SuccessResponse<CategoryDTO> success = new SuccessResponse<>("Category updated", updatedCategory, HttpStatus.OK);
+        return new ResponseEntity<>(success, HttpStatus.OK);
     }
 
-    @DeleteMapping("/{categoryId}")
-    public ResponseEntity<Void> softDeleteCategory(@PathVariable Integer categoryId) {
-        boolean deleted = categoryService.softDeleteCategory(categoryId);
+    @PutMapping()
+    public ResponseEntity<Void> TrashOrRestore(@RequestParam int categoryId) {
+        boolean deleted = categoryService.softDeleteOrRestoreCategory(categoryId);
         if (deleted) {
             return ResponseEntity.noContent().build();
         }

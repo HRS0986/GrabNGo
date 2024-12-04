@@ -51,7 +51,7 @@ public class JwtService {
                 .compact();
     }
 
-    public boolean isTokenValid(String token, String emailAddress){
+    public boolean isTokenValid(String token, String emailAddress) {
         final String username = extractEmailAddress(token);
         return (username.equals(emailAddress)) && !isTokenExpired(token);
     }
@@ -61,10 +61,10 @@ public class JwtService {
     }
 
     private Date extractExpiration(String token) {
-        return extractClaim(token,Claims::getExpiration);
+        return extractClaim(token, Claims::getExpiration);
     }
 
-    private Claims extractAllClaims(String token){
+    private Claims extractAllClaims(String token) {
         return Jwts
                 .parserBuilder()
                 .setSigningKey(getSignedKey())
@@ -74,10 +74,10 @@ public class JwtService {
     }
 
     public String extractEmailAddress(String token) {
-        return extractClaim(token,Claims::getSubject);
+        return extractClaim(token, Claims::getSubject);
     }
 
-    public <T> T extractClaim(String token, Function<Claims, T> claimsResolver){
+    public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
         final Claims claims = extractAllClaims(token);
         return claimsResolver.apply(claims);
     }

@@ -2,20 +2,22 @@ package com.auth.auth.service;
 
 import com.auth.auth.constants.Messages;
 import com.auth.auth.dto.*;
+import com.auth.auth.exception.InvalidAuthenticationException;
 import com.auth.auth.exception.UserNotFoundException;
+import com.auth.auth.model.User;
 import com.auth.auth.model.VerificationCode;
+import com.auth.auth.repository.AuthRepository;
 import com.auth.auth.repository.VerificationCodeRepository;
 import com.auth.auth.utils.ActionResult;
-import com.auth.auth.model.User;
-import com.auth.auth.repository.AuthRepository;
 import com.auth.auth.utils.VerificationCodeGenerator;
 import jakarta.mail.MessagingException;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 
 @Service
 public class AuthService {
@@ -25,16 +27,15 @@ public class AuthService {
     private final JwtService jwtService;
     private final EmailService emailService;
     private final VerificationCodeRepository verificationCodeRepository;
+    private final WebClient.Builder webClientBuilder;
 
-    @Value("${webapp.forget-password.url}")
-    private String forgetPasswordUrl;
-
-    public AuthService(AuthRepository authRepository, PasswordEncoder passwordEncoder, JwtService jwtService, EmailService emailService, VerificationCodeRepository verificationCodeRepository) {
+    public AuthService(AuthRepository authRepository, PasswordEncoder passwordEncoder, JwtService jwtService, EmailService emailService, VerificationCodeRepository verificationCodeRepository, WebClient.Builder webClientBuilder) {
         this.authRepository = authRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
         this.emailService = emailService;
         this.verificationCodeRepository = verificationCodeRepository;
+        this.webClientBuilder = webClientBuilder;
     }
 
     public ActionResult login(LoginRequest credentials) {
@@ -45,26 +46,66 @@ public class AuthService {
     }
 
     public ActionResult register(User user) {
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
-        var result = authRepository.save(user);
-        return new ActionResult(true, Messages.USER_CREATED_SUCCESS, result, null);
+        try {
+            user.setPassword(passwordEncoder.encode(user.getPassword()));
+            var savedUser = authRepository.save(user);
+            var token = jwtService.generateAccessToken(savedUser.getEmailAddress());
+            webClientBuilder.build()
+                    .post()
+                    .uri("http://apigateway/api/v1/cart")
+                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                    .bodyValue(savedUser.getUserId())
+                    .retrieve()
+                    .bodyToMono(Void.class)
+                    .block();
+
+            return new ActionResult(
+                    true,
+                    Messages.USER_CREATED_SUCCESS,
+                    savedUser,
+                    null
+            );
+
+        } catch (WebClientResponseException e) {
+            return new ActionResult(
+                    false,
+                    "Cart creation failed: " + e.getMessage(),
+                    null,
+                    e.getMessage()
+            );
+        } catch (Exception e) {
+            return new ActionResult(
+                    false,
+                    "Registration failed: " + e.getMessage(),
+                    null,
+                    e.getMessage()
+            );
+        }
     }
 
     public ActionResult tokenRefresh(RefreshTokenRequest tokenRequest) {
-        var emailAddress = jwtService.extractEmailAddress(tokenRequest.getRefreshToken());
-        if (!emailAddress.isBlank()) {
-            var user = authRepository.findByEmailAddress(emailAddress).orElseThrow();
-            if (jwtService.isTokenValid(tokenRequest.getRefreshToken(), user.getEmailAddress())) {
-                var accessToken = jwtService.generateAccessToken(emailAddress);
-                return new ActionResult(true, Messages.TOKEN_REFRESHED, accessToken, null);
+        var emailAddressRefreshToken = jwtService.extractEmailAddress(tokenRequest.getRefreshToken());
+        var emailAddressAccessToken = jwtService.extractEmailAddress(tokenRequest.getAccessToken());
+
+        if (!emailAddressRefreshToken.isBlank() && !emailAddressAccessToken.isBlank()) {
+            if (emailAddressRefreshToken.equals(emailAddressAccessToken)) {
+                var user = authRepository.findByEmailAddress(emailAddressRefreshToken).orElseThrow();
+                if (jwtService.isTokenValid(tokenRequest.getRefreshToken(), user.getEmailAddress())) {
+                    var accessToken = jwtService.generateAccessToken(emailAddressRefreshToken);
+                    return new ActionResult(true, Messages.TOKEN_REFRESHED, accessToken, null);
+                }
             }
         }
-        throw new RuntimeException(Messages.TOKEN_INVALID);
+
+        throw new InvalidAuthenticationException(Messages.TOKEN_INVALID);
     }
 
     public ActionResult forgetPassword(String email) throws MessagingException, IOException {
         var userOptional = authRepository.findByEmailAddress(email);
         if (userOptional.isEmpty()) {
+            throw new UserNotFoundException(Messages.USER_NOT_FOUND);
+        }
+        if (!userOptional.get().isActive()) {
             throw new UserNotFoundException(Messages.USER_NOT_FOUND);
         }
 
@@ -73,7 +114,7 @@ public class AuthService {
         verificationCode.setEmail(email);
         verificationCode.setVerificationCode(code);
         verificationCodeRepository.save(verificationCode);
-        emailService.sendForgetPasswordEmail(email, code, forgetPasswordUrl);
+        emailService.sendForgetPasswordEmail(email, code);
         return new ActionResult(true, Messages.EMAIL_SEND_SUCCESS, null, null);
     }
 
@@ -84,16 +125,16 @@ public class AuthService {
     public ActionResult verifyRequest(VerificationRequest verificationRequest, boolean deactivateCode) {
         var codeOptional = verificationCodeRepository.findByCode(verificationRequest.getVerificationCode());
         if (codeOptional.isEmpty()) {
-            throw new RuntimeException(Messages.INVALID_VERIFICATION_CODE);
+            throw new InvalidAuthenticationException(Messages.INVALID_VERIFICATION_CODE);
         }
 
         VerificationCode verificationCode = codeOptional.get();
         if (!verificationCode.getEmail().equals(verificationRequest.getEmail())) {
-            throw new RuntimeException(Messages.INVALID_VERIFICATION_CODE);
+            throw new InvalidAuthenticationException(Messages.INVALID_VERIFICATION_CODE);
         }
 
         if (!verificationCode.isValid()) {
-            throw new RuntimeException(Messages.INVALID_VERIFICATION_CODE);
+            throw new InvalidAuthenticationException(Messages.INVALID_VERIFICATION_CODE);
         }
 
         if (deactivateCode) {
@@ -116,6 +157,10 @@ public class AuthService {
 
         var userOptional = authRepository.findByEmailAddress(resetPasswordRequest.getEmail());
         if (userOptional.isEmpty()) {
+            throw new UserNotFoundException(Messages.USER_NOT_FOUND);
+        }
+
+        if (!userOptional.get().isActive()) {
             throw new UserNotFoundException(Messages.USER_NOT_FOUND);
         }
 

@@ -1,41 +1,11 @@
-﻿version: '3.8'
-
-services:
-  kafka:
-    image: apache/kafka:3.8.0
-    container_name: kafka
-    ports:
-      - "9092:9092"
-    restart: always
-
-  kafka-ui:
-    container_name: kafka-ui
-    image: provectuslabs/kafka-ui:latest
-    ports:
-      - "8090:8080"
-    environment:
-      DYNAMIC_CONFIG_ENABLED: 'true'
-    volumes:
-      - ./kui/config.yml:/etc/kafkaui/dynamic_config.yaml
-
-  keycloak:
-    image: keycloak/keycloak:26.0.2
-    container_name: keycloak
-    ports:
-      - "8091:8091"
-    environment:
-      KC_BOOTSTRAP_ADMIN_USERNAME: admin
-      KC_BOOTSTRAP_ADMIN_PASSWORD: admin
-    command: ["start-dev", "--http-port=8091"]
-    restart: always
-
+﻿services:
   order-db:
     image: mysql:8.4.3
     container_name: order-db
     ports:
       - "33061:3306"
     environment:
-      MYSQL_ROOT_PASSWORD: Sewmini/01831
+      MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: OrderDB
     restart: always
 
@@ -78,3 +48,104 @@ services:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: AuthDB
     restart: always
+
+  discovery-server:
+    container_name: discovery-server
+    build:
+      context: ./discovery/
+    ports:
+      - "8761:8761"
+
+  api-gateway:
+    container_name: api-gateway
+    build:
+      context: ./apigateway/
+    environment:
+      - server.port=80
+      - eureka.client.service-url.defaultZone=http://discovery-server:8761/eureka
+    ports:
+      - "8080:80"
+    expose:
+      - "80"
+    depends_on:
+      - discovery-server
+
+  auth-service:
+    container_name: auth-service
+    build:
+      context: ./auth/
+    environment:
+      - server.port=80
+      - spring.datasource.url=jdbc:mysql://auth-db:3306/AuthDB
+      - eureka.client.service-url.defaultZone=http://discovery-server:8761/eureka
+    ports:
+      - "8082:80"
+    expose:
+      - "80"
+    depends_on:
+      - discovery-server
+      - auth-db
+
+  order-service:
+    container_name: order-service
+    build:
+      context: ./order/
+    environment:
+      - server.port=80
+      - spring.datasource.url=jdbc:mysql://order-db:3306/OrderDB
+      - eureka.client.service-url.defaultZone=http://discovery-server:8761/eureka
+    ports:
+      - "8083:80"
+    expose:
+      - "80"
+    depends_on:
+      - discovery-server
+      - order-db
+
+  product-service:
+    container_name: product-service
+    build:
+      context: ./product/
+    environment:
+      - server.port=80
+      - spring.datasource.url=jdbc:mysql://product-db:3306/ProductDB
+      - eureka.client.service-url.defaultZone=http://discovery-server:8761/eureka
+    ports:
+      - "8084:80"
+    expose:
+      - "80"
+    depends_on:
+      - discovery-server
+      - product-db
+
+  cart-service:
+    container_name: cart-service
+    build:
+      context: ./cart/
+    environment:
+      - server.port=80
+      - spring.datasource.url=jdbc:mysql://cart-db:3306/CartDB
+      - eureka.client.service-url.defaultZone=http://discovery-server:8761/eureka
+    ports:
+      - "8085:80"
+    expose:
+      - "80"
+    depends_on:
+      - discovery-server
+      - cart-db
+
+  category-service:
+    container_name: category-service
+    build:
+      context: ./category/
+    environment:
+      - server.port=80
+      - spring.datasource.url=jdbc:mysql://category-db:3306/CategoryDB
+      - eureka.client.service-url.defaultZone=http://discovery-server:8761/eureka
+    ports:
+      - "8086:80"
+    expose:
+      - "80"
+    depends_on:
+      - discovery-server
+      - category-db
