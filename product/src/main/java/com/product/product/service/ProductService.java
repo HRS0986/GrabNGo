@@ -40,7 +40,6 @@ public class ProductService {
         else{
             throw new ResourceNotFoundException("Product with id " + id + " not found");
         }
-
     }
 
     public ProductDto saveProduct(ProductDto productDto) {
@@ -80,13 +79,13 @@ public class ProductService {
                 productRepository.softDeleteById(id);
 //                ProductDto deletedProduct = modelMapper.map(product.get(), ProductDto.class);
 //                dataMap.put("productDto", deletedProduct);
-                dataMap.put("messege", "Product deleted successfully");
+                dataMap.put("message", "Product deleted successfully");
             }
             else {
                 productRepository.restoreProductById(id);
 //                ProductDto restoredProduct = modelMapper.map(product.get(), ProductDto.class);
 //                dataMap.put("productDto", restoredProduct);
-                dataMap.put("messege", "Product restored successfully");
+                dataMap.put("message", "Product restored successfully");
             }
             return dataMap;
         }
@@ -100,13 +99,12 @@ public class ProductService {
         Map<String,Object> dataMap = new HashMap<>();
         if (isDeleted) {
             productRepository.restoreByCategoryId(categoryId);
-            dataMap.put("messege", "Products restored successfully");
+            dataMap.put("message", "Products restored successfully");
         }
         else {
             productRepository.softDeleteByCategoryId(categoryId);
-            dataMap.put("messege", "Products deleted successfully");
+            dataMap.put("message", "Products deleted successfully");
         }
         return dataMap;
     }
-
 }

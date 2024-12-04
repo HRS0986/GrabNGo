@@ -1,5 +1,4 @@
 package com.auth.auth.service;
-
 import com.auth.auth.constants.Messages;
 import com.auth.auth.dto.ChangePasswordRequest;
 import com.auth.auth.dto.UserDTO;
