@@ -4,13 +4,14 @@ import com.auth.auth.constants.Messages;
 import com.auth.auth.dto.*;
 import com.auth.auth.exception.InvalidAuthenticationException;
 import com.auth.auth.exception.UserNotFoundException;
+import com.auth.auth.model.User;
 import com.auth.auth.model.VerificationCode;
+import com.auth.auth.repository.AuthRepository;
 import com.auth.auth.repository.VerificationCodeRepository;
 import com.auth.auth.utils.ActionResult;
-import com.auth.auth.model.User;
-import com.auth.auth.repository.AuthRepository;
 import com.auth.auth.utils.VerificationCodeGenerator;
 import jakarta.mail.MessagingException;
+import org.springframework.http.HttpHeaders;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -26,7 +27,7 @@ public class AuthService {
     private final JwtService jwtService;
     private final EmailService emailService;
     private final VerificationCodeRepository verificationCodeRepository;
-    private final WebClient.Builder cartWebClient;
+    private final WebClient.Builder webClientBuilder;
 
     public AuthService(AuthRepository authRepository, PasswordEncoder passwordEncoder, JwtService jwtService, EmailService emailService, VerificationCodeRepository verificationCodeRepository, WebClient.Builder webClientBuilder) {
         this.authRepository = authRepository;
@@ -34,7 +35,7 @@ public class AuthService {
         this.jwtService = jwtService;
         this.emailService = emailService;
         this.verificationCodeRepository = verificationCodeRepository;
-        this.cartWebClient = webClientBuilder;
+        this.webClientBuilder = webClientBuilder;
     }
 
     public ActionResult login(LoginRequest credentials) {
@@ -48,9 +49,11 @@ public class AuthService {
         try {
             user.setPassword(passwordEncoder.encode(user.getPassword()));
             var savedUser = authRepository.save(user);
-            cartWebClient.build()
+            var token = jwtService.generateAccessToken(savedUser.getEmailAddress());
+            webClientBuilder.build()
                     .post()
-                    .uri("/cart")
+                    .uri("http://apigateway/api/v1/cart")
+                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
                     .bodyValue(savedUser.getUserId())
                     .retrieve()
                     .bodyToMono(Void.class)

@@ -17,10 +17,10 @@ public class GlobalExceptionHandler {
                 e.getMessage(),
                 request.getDescription(true)
         );
-        return new ResponseEntity<>(error,error.getStatus());
+        return new ResponseEntity<>(error, error.getStatus());
     }
 
-    @ExceptionHandler(value= ResourceNotFoundException.class)
+    @ExceptionHandler(value = ResourceNotFoundException.class)
     public ResponseEntity<ErrorResponse> resourceNotFoundExceptionHandler(ResourceNotFoundException e, WebRequest request) {
         ErrorResponse error = new ErrorResponse(
                 HttpStatus.NOT_FOUND,
@@ -28,6 +28,6 @@ public class GlobalExceptionHandler {
                 e.getMessage(),
                 request.getDescription(true)
         );
-        return new ResponseEntity<>(error,error.getStatus());
+        return new ResponseEntity<>(error, error.getStatus());
     }
 }

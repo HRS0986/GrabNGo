@@ -4,7 +4,6 @@ import com.category.category.dto.CategoryDTO;
 import com.category.category.exception.ResourceNotFoundException;
 import com.category.category.model.Category;
 import com.category.category.repo.CategoryRepo;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
@@ -91,7 +90,7 @@ public class CategoryService {
     public Mono<Void> deleteRelatedProducts(int categoryId, boolean isDeleted) {
         return webClientBuilder.build()
                 .put()
-                .uri("/product/deleteByCategory?categoryId={categoryId}&isDeleted={isDeleted}", categoryId, isDeleted)
+                .uri("http://apigateway/api/v1/product/deleteByCategory?categoryId={categoryId}&isDeleted={isDeleted}", categoryId, isDeleted)
                 .retrieve()
                 .bodyToMono(Void.class);
     }

@@ -23,9 +23,10 @@ public class CartService {
         this.modelMapper = modelMapper;
     }
 
-    public List<CartDTO> getAllCarts(){
-        List<Cart>cartList = cartRepo.findAll();
-        return modelMapper.map(cartList, new TypeToken<List<CartDTO>>(){}.getType());
+    public List<CartDTO> getAllCarts() {
+        List<Cart> cartList = cartRepo.findAll();
+        return modelMapper.map(cartList, new TypeToken<List<CartDTO>>() {
+        }.getType());
     }
 
     public CartDTO getCartByUserId(int userId) {

@@ -1,4 +1,5 @@
 package com.category.category.controller;
+
 import com.category.category.dto.CategoryDTO;
 import com.category.category.responses.SuccessResponse;
 import com.category.category.service.CategoryService;
@@ -11,6 +12,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/categories")
+@CrossOrigin(origins = "*")
 public class CategoryController {
 
     @Autowired
@@ -19,21 +21,21 @@ public class CategoryController {
     @PostMapping
     public ResponseEntity<SuccessResponse<CategoryDTO>> addCategory(@RequestBody CategoryDTO categoryDTO) {
         CategoryDTO createdCategory = categoryService.addCategory(categoryDTO);
-        SuccessResponse<CategoryDTO> success = new SuccessResponse<>("Category added",createdCategory, HttpStatus.CREATED);
+        SuccessResponse<CategoryDTO> success = new SuccessResponse<>("Category added", createdCategory, HttpStatus.CREATED);
         return new ResponseEntity<>(success, HttpStatus.CREATED);
     }
 
     @GetMapping
     public ResponseEntity<SuccessResponse<List<CategoryDTO>>> getAllCategories() {
         List<CategoryDTO> categories = categoryService.getAllCategories();
-        SuccessResponse<List<CategoryDTO>> success = new SuccessResponse<>("fetch categories",categories, HttpStatus.OK);
+        SuccessResponse<List<CategoryDTO>> success = new SuccessResponse<>("fetch categories", categories, HttpStatus.OK);
         return new ResponseEntity<>(success, HttpStatus.OK);
     }
 
     @GetMapping("/{categoryId}")
     public ResponseEntity<SuccessResponse<CategoryDTO>> getCategoryById(@PathVariable int categoryId) {
         CategoryDTO category = categoryService.getCategoryById(categoryId);
-        SuccessResponse<CategoryDTO> success = new SuccessResponse<>("Category found",category, HttpStatus.OK);
+        SuccessResponse<CategoryDTO> success = new SuccessResponse<>("Category found", category, HttpStatus.OK);
         return new ResponseEntity<>(success, HttpStatus.OK);
     }
 
@@ -42,8 +44,8 @@ public class CategoryController {
             @PathVariable int categoryId,
             @RequestBody CategoryDTO categoryDTO) {
         CategoryDTO updatedCategory = categoryService.updateCategory(categoryId, categoryDTO);
-        SuccessResponse<CategoryDTO> success = new SuccessResponse<>("Category updated",updatedCategory, HttpStatus.OK);
-        return new ResponseEntity<>(success,HttpStatus.OK);
+        SuccessResponse<CategoryDTO> success = new SuccessResponse<>("Category updated", updatedCategory, HttpStatus.OK);
+        return new ResponseEntity<>(success, HttpStatus.OK);
     }
 
     @PutMapping()

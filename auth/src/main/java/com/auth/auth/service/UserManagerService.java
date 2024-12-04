@@ -32,7 +32,7 @@ public class UserManagerService implements UserDetailsService {
     private ModelMapper modelMapper;
 
     @Autowired
-    private WebClient.Builder cartWebClient;
+    private WebClient.Builder webClientBuilder;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -104,9 +104,9 @@ public class UserManagerService implements UserDetailsService {
         var isUserActive = isActiveEmail(email);
         User user = (User) isUserActive.getData();
         user.setActive(false);
-        cartWebClient.build()
+        webClientBuilder.build()
                 .delete()
-                .uri("/cart/user/" + user.getUserId())
+                .uri("http://apigateway/api/v1/cart/user/" + user.getUserId())
                 .retrieve()
                 .bodyToMono(Void.class)
                 .block();
