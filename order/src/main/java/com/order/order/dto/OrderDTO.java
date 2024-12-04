@@ -20,4 +20,13 @@ public class OrderDTO {
     private Double discount;
 
     private List<OrderItemDTO> orderItems;
+
+    private String firstName;
+    private String lastName;
+    private String address;
+    private String apartment;
+    private String city;
+    private String country;
+    private String zipCode;
+    
 }
