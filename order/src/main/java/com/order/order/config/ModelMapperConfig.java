@@ -1,5 +1,4 @@
 package com.order.order.config;
-
 import com.order.order.dto.OrderDTO;
 import com.order.order.dto.OrderItemDTO;
 import com.order.order.model.Order;
@@ -36,7 +35,15 @@ public class ModelMapperConfig {
                 .addMapping(Order::getTotalPrice, OrderDTO::setTotalPrice)
                 .addMapping(Order::getDiscount, OrderDTO::setDiscount)
                 .addMapping(Order::getStatus, OrderDTO::setStatus)
-                .addMapping(Order::getCreatedDateTime, OrderDTO::setCreatedDateTime);
+                .addMapping(Order::getCreatedDateTime, OrderDTO::setCreatedDateTime)
+                .addMapping(Order::getFirstName, OrderDTO::setFirstName)
+                .addMapping(Order::getLastName, OrderDTO::setLastName)
+                .addMapping(Order::getAddress, OrderDTO::setAddress)
+                .addMapping(Order::getApartment, OrderDTO::setApartment)
+                .addMapping(Order::getCity, OrderDTO::setCity)
+                .addMapping(Order::getCountry, OrderDTO::setCountry)
+                .addMapping(Order::getZipCode, OrderDTO::setZipCode);
+
 
         return modelMapper;
     }
