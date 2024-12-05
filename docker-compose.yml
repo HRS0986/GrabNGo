@@ -1,4 +1,18 @@
 ﻿services:
+  mysql-workbench:
+    image: lscr.io/linuxserver/mysql-workbench:latest
+    container_name: mysql-workbench
+    cap_add:
+      - IPC_LOCK
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Etc/UTC
+    ports:
+      - 3000:3000
+      - 3001:3001
+    restart: unless-stopped
+
   order-db:
     image: mysql:8.4.3
     container_name: order-db
@@ -52,14 +66,20 @@
   discovery-server:
     container_name: discovery-server
     build:
-      context: ./discovery/
+      context: .
+      dockerfile: Dockerfile
+      args:
+        SERVICE_NAME: discovery
     ports:
       - "8761:8761"
 
   api-gateway:
     container_name: api-gateway
     build:
-      context: ./apigateway/
+      context: .
+      dockerfile: Dockerfile
+      args:
+        SERVICE_NAME: apigateway
     environment:
       - server.port=80
       - eureka.client.service-url.defaultZone=http://discovery-server:8761/eureka
@@ -73,7 +93,10 @@
   auth-service:
     container_name: auth-service
     build:
-      context: ./auth/
+      context: .
+      dockerfile: Dockerfile
+      args:
+        SERVICE_NAME: auth
     environment:
       - server.port=80
       - spring.datasource.url=jdbc:mysql://auth-db:3306/AuthDB
@@ -89,7 +112,10 @@
   order-service:
     container_name: order-service
     build:
-      context: ./order/
+      context: .
+      dockerfile: Dockerfile
+      args:
+        SERVICE_NAME: order
     environment:
       - server.port=80
       - spring.datasource.url=jdbc:mysql://order-db:3306/OrderDB
@@ -105,7 +131,10 @@
   product-service:
     container_name: product-service
     build:
-      context: ./product/
+      context: .
+      dockerfile: Dockerfile
+      args:
+        SERVICE_NAME: product
     environment:
       - server.port=80
       - spring.datasource.url=jdbc:mysql://product-db:3306/ProductDB
@@ -121,7 +150,10 @@
   cart-service:
     container_name: cart-service
     build:
-      context: ./cart/
+      context: .
+      dockerfile: Dockerfile
+      args:
+        SERVICE_NAME: cart
     environment:
       - server.port=80
       - spring.datasource.url=jdbc:mysql://cart-db:3306/CartDB
@@ -137,7 +169,10 @@
   category-service:
     container_name: category-service
     build:
-      context: ./category/
+      context: .
+      dockerfile: Dockerfile
+      args:
+        SERVICE_NAME: category
     environment:
       - server.port=80
       - spring.datasource.url=jdbc:mysql://category-db:3306/CategoryDB
