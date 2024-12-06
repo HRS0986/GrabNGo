@@ -43,7 +43,7 @@ class EmailServiceTest {
         MimeMessage mockMessage = mock(MimeMessage.class);
         when(mailSender.createMimeMessage()).thenReturn(mockMessage);
 
-        emailService.sendForgetPasswordEmail(email, code, actionURL);
+        emailService.sendForgetPasswordEmail(email, code);
 
         verify(mailSender, times(1)).send(mockMessage);
 

@@ -165,7 +165,7 @@ class UserManagerServiceTest {
 
         when(authRepository.findByEmailAddress(testEmail)).thenReturn(Optional.of(mockUser));
 
-        ActionResult result = userManagerService.deleteProfile(testEmail);
+        ActionResult result = userManagerService.deleteUser(testEmail);
 
         assertTrue(result.getStatus());
         assertEquals(Messages.USER_DELETED_SUCCESS, result.getMessage());
@@ -177,7 +177,7 @@ class UserManagerServiceTest {
     void testDeleteProfile_UserNotFound() {
         when(authRepository.findByEmailAddress(testEmail)).thenReturn(Optional.empty());
 
-        assertThrows(UserNotFoundException.class, () -> userManagerService.deleteProfile(testEmail));
+        assertThrows(UserNotFoundException.class, () -> userManagerService.deleteUser(testEmail));
     }
 
     @Test
