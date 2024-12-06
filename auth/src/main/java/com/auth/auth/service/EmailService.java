@@ -26,22 +26,21 @@ public class EmailService {
     @Value("${mail.sender.email}")
     private String senderEmail;
 
-    public EmailService(JavaMailSender javaMailSender){
+    public EmailService(JavaMailSender javaMailSender) {
         mailSender = javaMailSender;
     }
 
-    public void sendForgetPasswordEmail(String email, String code, String actionURL) throws MessagingException, IOException {
-        String resetLink = String.format("%s?code=%s&email=%s", actionURL, code, email);
+    public void sendForgetPasswordEmail(String email, String code) throws MessagingException, IOException {
         String filepath = "templates/reset-password-template.html";
-        String emailContent = loadEmailTemplate(code, resetLink, filepath);
+        String emailContent = loadEmailTemplate(code, filepath);
         sendEmail(email, Messages.FORGET_PASSWORD_EMAIL_SUBJECT, emailContent);
     }
 
-    private String loadEmailTemplate(String code, String resetLink, String filepath) throws IOException {
+    private String loadEmailTemplate(String code, String filepath) throws IOException {
         ClassPathResource resource = new ClassPathResource(filepath);
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(resource.getInputStream(), StandardCharsets.UTF_8))) {
             String template = reader.lines().collect(Collectors.joining(System.lineSeparator()));
-            template = template.replace("{{resetLink}}", resetLink);
+            template = template.replace("{{verification_code}}", code);
             return template;
         }
     }

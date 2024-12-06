@@ -12,5 +12,6 @@ public class OrderItemDTO {
     private int orderId;
     private int productId;
     private int quantity;
+    private Double discount;
     private Double sellPrice;
 }
