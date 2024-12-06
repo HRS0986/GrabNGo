@@ -1,10 +1,12 @@
 package com.cart.cart.service;
 
 import com.cart.cart.dto.CartItemDTO;
+import com.cart.cart.exception.ResourceNotFoundException;
 import com.cart.cart.model.Cart;
 import com.cart.cart.model.CartItem;
 import com.cart.cart.repo.CartItemRepo;
 import com.cart.cart.repo.CartRepo;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -19,10 +21,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class CartItemServiceTest {
-
-    @InjectMocks
-    private CartItemService cartItemService;
+public class CartItemServiceTest {
 
     @Mock
     private CartItemRepo cartItemRepo;
@@ -33,131 +32,95 @@ class CartItemServiceTest {
     @Mock
     private ModelMapper modelMapper;
 
+    @InjectMocks
+    private CartItemService cartItemService;
+
+    private Cart cart;
+    private CartItem cartItem;
+    private CartItemDTO cartItemDTO;
+
+    @BeforeEach
+    void setUp() {
+        cart = new Cart();
+        cart.setCartId(1);
+        cart.setTotalAmount(0);
+        cart.setTotalPrice(0.0);
+
+        cartItem = new CartItem();
+        cartItem.setCartItemId(1);
+        cartItem.setProductId(101);
+        cartItem.setQuantity(2);
+        cartItem.setPrice(50.0);
+        cartItem.setCart(cart);
+
+        cartItemDTO = new CartItemDTO(1, 101, 2, 50.0, 1);
+    }
+
     @Test
-    void addCartItem_ValidCartId_ReturnsSavedCartItemDTO() {
-        int cartId = 1;
-        CartItemDTO cartItemDTO = new CartItemDTO();
-        Cart cart = new Cart();
-        cart.setCartId(cartId);
-
-        CartItem cartItem = new CartItem();
-        CartItem savedCartItem = new CartItem();
-        CartItemDTO savedCartItemDTO = new CartItemDTO();
-
-        when(cartRepo.findById(cartId)).thenReturn(Optional.of(cart));
+    void testAddCartItem() {
+        when(cartRepo.findById(cartItemDTO.getCartId())).thenReturn(Optional.of(cart));
         when(modelMapper.map(cartItemDTO, CartItem.class)).thenReturn(cartItem);
-        when(cartItemRepo.save(cartItem)).thenReturn(savedCartItem);
-        when(modelMapper.map(savedCartItem, CartItemDTO.class)).thenReturn(savedCartItemDTO);
+        when(cartItemRepo.save(cartItem)).thenReturn(cartItem);
+        when(modelMapper.map(cartItem, CartItemDTO.class)).thenReturn(cartItemDTO);
 
-        CartItemDTO result = cartItemService.addCartItem(cartId, cartItemDTO);
-
-        assertNotNull(result);
-        verify(cartRepo, times(1)).findById(cartId);
-        verify(cartItemRepo, times(1)).save(cartItem);
-    }
-
-    @Test
-    void addCartItem_InvalidCartId_ThrowsException() {
-        int cartId = 999;
-        CartItemDTO cartItemDTO = new CartItemDTO();
-
-        when(cartRepo.findById(cartId)).thenReturn(Optional.empty());
-
-        RuntimeException exception = assertThrows(RuntimeException.class, () ->
-                cartItemService.addCartItem(cartId, cartItemDTO));
-
-        assertEquals("Cart not found", exception.getMessage());
-        verify(cartRepo, times(1)).findById(cartId);
-        verify(cartItemRepo, never()).save(any(CartItem.class));
-    }
-
-    @Test
-    void getCartItemsByCartId_ValidCartId_ReturnsListOfCartItemDTO() {
-        int cartId = 1;
-        List<CartItem> cartItemList = List.of(new CartItem(), new CartItem());
-        List<CartItemDTO> cartItemDTOList = List.of(new CartItemDTO(), new CartItemDTO());
-
-        when(cartItemRepo.findByCart_CartId(cartId)).thenReturn(cartItemList);
-        when(modelMapper.map(cartItemList.get(0), CartItemDTO.class)).thenReturn(cartItemDTOList.get(0));
-        when(modelMapper.map(cartItemList.get(1), CartItemDTO.class)).thenReturn(cartItemDTOList.get(1));
-
-        List<CartItemDTO> result = cartItemService.getCartItemsByCartId(cartId);
+        CartItemDTO result = cartItemService.addCartItem(cartItemDTO);
 
         assertNotNull(result);
-        assertEquals(2, result.size());
-        verify(cartItemRepo, times(1)).findByCart_CartId(cartId);
+        assertEquals(cartItemDTO.getCartItemId(), result.getCartItemId());
+        verify(cartRepo).save(cart);
     }
 
     @Test
-    void getCartItemsByCartId_InvalidCartId_ThrowsException() {
-        int cartId = 999;
+    void testAddCartItem_CartNotFound() {
+        when(cartRepo.findById(cartItemDTO.getCartId())).thenReturn(Optional.empty());
 
-        when(cartItemRepo.findByCart_CartId(cartId)).thenThrow(new RuntimeException("Error retrieving CartItems for cartId: " + cartId));
-
-        RuntimeException exception = assertThrows(RuntimeException.class, () ->
-                cartItemService.getCartItemsByCartId(cartId));
-
-        assertEquals("Error retrieving CartItems for cartId: " + cartId, exception.getMessage());
-        verify(cartItemRepo, times(1)).findByCart_CartId(cartId);
+        assertThrows(ResourceNotFoundException.class, () -> cartItemService.addCartItem(cartItemDTO));
+        verify(cartRepo, never()).save(any(Cart.class));
     }
 
     @Test
-    void updateCartItem_ValidCartItemId_ReturnsUpdatedCartItemDTO() {
-        int cartItemId = 1;
-        CartItemDTO cartItemDTO = new CartItemDTO();
-        CartItem existingCartItem = new CartItem();
-        CartItem updatedCartItem = new CartItem();
-        CartItemDTO updatedCartItemDTO = new CartItemDTO();
+    void testGetCartItemsByCartId() {
+        when(cartItemRepo.findByCart_CartId(cart.getCartId())).thenReturn(List.of(cartItem));
+        when(modelMapper.map(cartItem, CartItemDTO.class)).thenReturn(cartItemDTO);
 
-        when(cartItemRepo.findById(cartItemId)).thenReturn(Optional.of(existingCartItem));
-        when(cartItemRepo.save(existingCartItem)).thenReturn(updatedCartItem);
-        when(modelMapper.map(updatedCartItem, CartItemDTO.class)).thenReturn(updatedCartItemDTO);
-
-        CartItemDTO result = cartItemService.updateCartItem(cartItemId, cartItemDTO);
+        List<CartItemDTO> result = cartItemService.getCartItemsByCartId(cart.getCartId());
 
         assertNotNull(result);
-        verify(cartItemRepo, times(1)).findById(cartItemId);
-        verify(cartItemRepo, times(1)).save(existingCartItem);
+        assertEquals(1, result.size());
+        assertEquals(cartItemDTO.getCartItemId(), result.get(0).getCartItemId());
     }
 
     @Test
-    void updateCartItem_InvalidCartItemId_ThrowsException() {
-        int cartItemId = 999;
-        CartItemDTO cartItemDTO = new CartItemDTO();
+    void testUpdateCartItem() {
+        when(cartItemRepo.findById(cartItemDTO.getCartItemId())).thenReturn(Optional.of(cartItem));
+        when(cartRepo.findById(cartItemDTO.getCartId())).thenReturn(Optional.of(cart));
+        when(cartItemRepo.save(cartItem)).thenReturn(cartItem);
+        when(modelMapper.map(cartItem, CartItemDTO.class)).thenReturn(cartItemDTO);
 
-        when(cartItemRepo.findById(cartItemId)).thenReturn(Optional.empty());
+        CartItemDTO result = cartItemService.updateCartItem(cartItemDTO);
 
-        RuntimeException exception = assertThrows(RuntimeException.class, () ->
-                cartItemService.updateCartItem(cartItemId, cartItemDTO));
-
-        assertEquals("CartItem not found", exception.getMessage());
-        verify(cartItemRepo, times(1)).findById(cartItemId);
-        verify(cartItemRepo, never()).save(any(CartItem.class));
+        assertNotNull(result);
+        assertEquals(cartItemDTO.getQuantity(), result.getQuantity());
+        verify(cartRepo).save(cart);
     }
 
     @Test
-    void deleteCartItem_ValidCartItemId_DeletesCartItem() {
-        int cartItemId = 1;
+    void testDeleteCartItem() {
+        when(cartItemRepo.findById(cartItemDTO.getCartItemId())).thenReturn(Optional.of(cartItem));
+        when(cartRepo.findById(cartItem.getCart().getCartId())).thenReturn(Optional.of(cart));
+        doNothing().when(cartItemRepo).deleteById(cartItemDTO.getCartItemId());
 
-        when(cartItemRepo.existsById(cartItemId)).thenReturn(true);
+        cartItemService.deleteCartItem(cartItemDTO.getCartItemId());
 
-        cartItemService.deleteCartItem(cartItemId);
-
-        verify(cartItemRepo, times(1)).existsById(cartItemId);
-        verify(cartItemRepo, times(1)).deleteById(cartItemId);
+        verify(cartItemRepo).deleteById(cartItemDTO.getCartItemId());
+        verify(cartRepo).save(cart);
     }
 
     @Test
-    void deleteCartItem_InvalidCartItemId_ThrowsException() {
-        int cartItemId = 999;
+    void testDeleteCartItem_NotFound() {
+        when(cartItemRepo.findById(cartItemDTO.getCartItemId())).thenReturn(Optional.empty());
 
-        when(cartItemRepo.existsById(cartItemId)).thenReturn(false);
-
-        RuntimeException exception = assertThrows(RuntimeException.class, () ->
-                cartItemService.deleteCartItem(cartItemId));
-
-        assertEquals("CartItem not found", exception.getMessage());
-        verify(cartItemRepo, times(1)).existsById(cartItemId);
-        verify(cartItemRepo, never()).deleteById(cartItemId);
+        assertThrows(ResourceNotFoundException.class, () -> cartItemService.deleteCartItem(cartItemDTO.getCartItemId()));
+        verify(cartItemRepo, never()).deleteById(anyInt());
     }
 }

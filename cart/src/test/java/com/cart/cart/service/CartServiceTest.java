@@ -1,16 +1,16 @@
 package com.cart.cart.service;
 
 import com.cart.cart.dto.CartDTO;
+import com.cart.cart.exception.ResourceNotFoundException;
 import com.cart.cart.model.Cart;
 import com.cart.cart.repo.CartRepo;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.*;
 import org.modelmapper.ModelMapper;
+import org.modelmapper.TypeToken;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.List;
 import java.util.Optional;
@@ -18,8 +18,8 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-@ExtendWith(MockitoExtension.class)
-public class CartServiceTest {
+@ExtendWith(SpringExtension.class)
+class CartServiceTest {
 
     @InjectMocks
     private CartService cartService;
@@ -30,113 +30,127 @@ public class CartServiceTest {
     @Mock
     private ModelMapper modelMapper;
 
+    private Cart cart;
+    private CartDTO cartDTO;
+
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
+
+        cart = new Cart();
+        cart.setCartId(1);
+        cart.setUserId(100);
+        cart.setTotalAmount(5);
+        cart.setTotalPrice(250.0);
+        cart.setActive(true);
+
+        cartDTO = new CartDTO();
+        cartDTO.setCartId(1);
+        cartDTO.setUserId(100);
+        cartDTO.setTotalAmount(5);
+        cartDTO.setTotalPrice(250.0);
+        cartDTO.setActive(true);
     }
 
     @Test
-    void testGetAllCarts() {
-
-        List<Cart> cartList = mock(List.class);
-        List<CartDTO> cartDTOList = mock(List.class);
+    void getAllCarts_shouldReturnAllCarts() {
+        List<Cart> cartList = List.of(cart);
+        List<CartDTO> cartDTOList = List.of(cartDTO);
 
         when(cartRepo.findAll()).thenReturn(cartList);
-        when(modelMapper.map(cartList, new org.modelmapper.TypeToken<List<CartDTO>>() {}.getType())).thenReturn(cartDTOList);
-
+        when(modelMapper.map(cartList, new TypeToken<List<CartDTO>>() {}.getType())).thenReturn(cartDTOList);
 
         List<CartDTO> result = cartService.getAllCarts();
 
-
         assertNotNull(result);
+        assertEquals(cartDTOList.size(), result.size());
+        assertEquals(cartDTOList.get(0).getCartId(), result.get(0).getCartId());
+
         verify(cartRepo, times(1)).findAll();
-        verify(modelMapper, times(1)).map(cartList, new org.modelmapper.TypeToken<List<CartDTO>>() {}.getType());
     }
 
     @Test
-    void testGetCartById_Success() {
+    void getCartByUserId_shouldReturnCartWhenFound() {
+        when(cartRepo.findByUserId(100)).thenReturn(Optional.of(cart));
+        when(modelMapper.map(cart, CartDTO.class)).thenReturn(cartDTO);
 
-        Cart mockCart = mock(Cart.class);
-        CartDTO mockCartDTO = mock(CartDTO.class);
-
-        when(cartRepo.findById(anyInt())).thenReturn(Optional.of(mockCart));
-        when(modelMapper.map(mockCart, CartDTO.class)).thenReturn(mockCartDTO);
-
-
-        CartDTO result = cartService.getCartById(1);
-
+        CartDTO result = cartService.getCartByUserId(100);
 
         assertNotNull(result);
-        verify(cartRepo, times(1)).findById(anyInt());
-        verify(modelMapper, times(1)).map(mockCart, CartDTO.class);
+        assertEquals(cartDTO.getCartId(), result.getCartId());
+        verify(cartRepo, times(1)).findByUserId(100);
     }
 
     @Test
-    void testGetCartById_NotFound() {
+    void getCartByUserId_shouldThrowExceptionWhenCartNotFound() {
+        when(cartRepo.findByUserId(100)).thenReturn(Optional.empty());
 
-        when(cartRepo.findById(anyInt())).thenReturn(Optional.empty());
+        ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class,
+                () -> cartService.getCartByUserId(100));
 
-
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> cartService.getCartById(1));
-        assertEquals("Cart not found", exception.getMessage());
-        verify(cartRepo, times(1)).findById(anyInt());
+        assertEquals("Cart not found with the User ID 100", exception.getMessage());
     }
 
     @Test
-    void testCreateCart() {
+    void createCart_shouldCreateNewCartWhenNotExists() {
+        when(cartRepo.findByUserId(100)).thenReturn(Optional.empty());
+        when(cartRepo.save(any(Cart.class))).thenReturn(cart);
+        when(modelMapper.map(cart, CartDTO.class)).thenReturn(cartDTO);
 
-        Cart mockCart = mock(Cart.class);
-        Cart savedCart = mock(Cart.class);
-        CartDTO mockCartDTO = mock(CartDTO.class);
-        CartDTO savedCartDTO = mock(CartDTO.class);
-
-        when(modelMapper.map(mockCartDTO, Cart.class)).thenReturn(mockCart);
-        when(cartRepo.save(mockCart)).thenReturn(savedCart);
-        when(modelMapper.map(savedCart, CartDTO.class)).thenReturn(savedCartDTO);
-
-
-        CartDTO result = cartService.createCart(mockCartDTO);
-
+        CartDTO result = cartService.createCart(100);
 
         assertNotNull(result);
-        verify(cartRepo, times(1)).save(mockCart);
-        verify(modelMapper, times(1)).map(mockCartDTO, Cart.class);
-        verify(modelMapper, times(1)).map(savedCart, CartDTO.class);
+        assertEquals(cartDTO.getUserId(), result.getUserId());
+        verify(cartRepo, times(1)).save(any(Cart.class));
     }
 
     @Test
-    void testUpdateCart() {
+    void createCart_shouldReturnExistingCartWhenExists() {
+        when(cartRepo.findByUserId(100)).thenReturn(Optional.of(cart));
+        when(modelMapper.map(cart, CartDTO.class)).thenReturn(cartDTO);
 
-        Cart existingCart = mock(Cart.class);
-        Cart updatedCart = mock(Cart.class);
-        CartDTO updatedCartDTO = mock(CartDTO.class);
-
-        when(cartRepo.findById(anyInt())).thenReturn(Optional.of(existingCart));
-        when(cartRepo.save(existingCart)).thenReturn(updatedCart);
-        when(modelMapper.map(updatedCart, CartDTO.class)).thenReturn(updatedCartDTO);
-
-
-        CartDTO result = cartService.updateCart(1, updatedCartDTO);
-
+        CartDTO result = cartService.createCart(100);
 
         assertNotNull(result);
-        verify(cartRepo, times(1)).findById(anyInt());
-        verify(cartRepo, times(1)).save(existingCart);
-        verify(modelMapper, times(1)).map(updatedCart, CartDTO.class);
+        assertEquals(cartDTO.getCartId(), result.getCartId());
+        verify(cartRepo, never()).save(any(Cart.class));
     }
 
     @Test
-    void testSoftDeleteCart() {
-
-        Cart mockCart = mock(Cart.class);
-
-        when(cartRepo.findById(anyInt())).thenReturn(Optional.of(mockCart));
-
+    void softDeleteCart_shouldSetCartToInactive() {
+        when(cartRepo.findById(1)).thenReturn(Optional.of(cart));
 
         cartService.softDeleteCart(1);
 
+        verify(cartRepo, times(1)).save(cart);
+        assertFalse(cart.isActive());
+    }
 
-        verify(cartRepo, times(1)).findById(anyInt());
-        verify(cartRepo, times(1)).save(mockCart);
+    @Test
+    void softDeleteCart_shouldDoNothingWhenCartNotFound() {
+        when(cartRepo.findById(1)).thenReturn(Optional.empty());
+
+        cartService.softDeleteCart(1);
+
+        verify(cartRepo, never()).save(any(Cart.class));
+    }
+
+    @Test
+    void deleteByUserId_shouldSetCartToInactive() {
+        when(cartRepo.findByUserId(100)).thenReturn(Optional.of(cart));
+
+        cartService.deleteByUserId(100);
+
+        verify(cartRepo, times(1)).save(cart);
+        assertFalse(cart.isActive());
+    }
+
+    @Test
+    void deleteByUserId_shouldDoNothingWhenCartNotFound() {
+        when(cartRepo.findByUserId(100)).thenReturn(Optional.empty());
+
+        cartService.deleteByUserId(100);
+
+        verify(cartRepo, never()).save(any(Cart.class));
     }
 }
