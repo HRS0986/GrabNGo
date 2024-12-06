@@ -25,10 +25,12 @@ public class CategoryServiceTest {
 
     private Category category;
     private CategoryDTO categoryDTO;
+    private AutoCloseable mocks;
+
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
+        mocks = MockitoAnnotations.openMocks(this);
 
         category = new Category();
         category.setCategoryId(1);
@@ -122,7 +124,7 @@ public class CategoryServiceTest {
         when(categoryRepo.findById(1)).thenReturn(Optional.of(category));
 
         // Act
-        boolean isDeleted = categoryService.softDeleteCategory(1);
+        boolean isDeleted = categoryService.softDeleteOrRestoreCategory(1);
 
         // Assert
         assertTrue(isDeleted);
@@ -137,7 +139,7 @@ public class CategoryServiceTest {
         when(categoryRepo.findById(1)).thenReturn(Optional.empty());
 
         // Act
-        boolean isDeleted = categoryService.softDeleteCategory(1);
+        boolean isDeleted = categoryService.softDeleteOrRestoreCategory(1);
 
         // Assert
         assertFalse(isDeleted);
