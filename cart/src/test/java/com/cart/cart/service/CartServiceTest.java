@@ -1,142 +1,183 @@
 package com.cart.cart.service;
 
 import com.cart.cart.dto.CartDTO;
-import com.cart.cart.dto.CartItemDTO;
 import com.cart.cart.model.Cart;
-import com.cart.cart.model.CartItem;
 import com.cart.cart.repo.CartRepo;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.Mockito;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
 
-import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+@ExtendWith(MockitoExtension.class)
 class CartServiceTest {
 
-    @InjectMocks
-    private CartService cartService;
-
     @Mock
-    private CartRepo cartRepository;
+    private CartRepo cartRepo;
 
     @Mock
     private ModelMapper modelMapper;
 
-    @BeforeEach
-    void setUp() {
-        MockitoAnnotations.openMocks(this);
+    @InjectMocks
+    private CartService cartService;
+
+    // Test for getAllCarts
+    @Test
+    void testGetAllCarts_Success() {
+        // Arrange
+        List<Cart> mockCarts = List.of(
+                new Cart(1, 101, 2, 100.0, true,null),
+                new Cart(2, 102, 3, 150.0, true,null)
+        );
+        List<CartDTO> mockCartDTOs = List.of(
+                new CartDTO(1, 101, 2, 100.0, true),
+                new CartDTO(2, 102, 3, 150.0, true)
+        );
+
+        when(cartRepo.findAll()).thenReturn(mockCarts);
+        when(modelMapper.map(mockCarts, new org.modelmapper.TypeToken<List<CartDTO>>() {}.getType())).thenReturn(mockCartDTOs);
+
+        // Act
+        List<CartDTO> cartDTOs = cartService.getAllCarts();
+
+        // Assert
+        assertEquals(2, cartDTOs.size());
+        assertEquals(mockCartDTOs, cartDTOs);
+
+        verify(cartRepo, times(1)).findAll();
+        verify(modelMapper, times(1)).map(mockCarts, new org.modelmapper.TypeToken<List<CartDTO>>() {}.getType());
     }
 
+    // Test for getCartById
     @Test
     void testGetCartById_Success() {
         // Arrange
-        Cart cart = new Cart(1, 1, 100, 200.0, true, null);
-        CartDTO expectedCartDTO = new CartDTO(1, 1, 100, 200.0, true);
+        Cart mockCart = new Cart(1, 101, 2, 100.0, true,null);
+        CartDTO mockCartDTO = new CartDTO(1, 101, 2, 100.0, true);
 
-        when(cartRepository.findById(1)).thenReturn(Optional.of(cart));
-        when(modelMapper.map(cart, CartDTO.class)).thenReturn(expectedCartDTO);
+        when(cartRepo.findById(1)).thenReturn(Optional.of(mockCart));
+        when(modelMapper.map(mockCart, CartDTO.class)).thenReturn(mockCartDTO);
 
         // Act
-        CartDTO actualCartDTO = cartService.getCartById(1);
+        CartDTO cartDTO = cartService.getCartById(1);
 
         // Assert
-        assertNotNull(actualCartDTO);
-        assertEquals(expectedCartDTO, actualCartDTO);
-        verify(cartRepository, times(1)).findById(1);
+        assertNotNull(cartDTO);
+        assertEquals(mockCartDTO, cartDTO);
+
+        verify(cartRepo, times(1)).findById(1);
+        verify(modelMapper, times(1)).map(mockCart, CartDTO.class);
     }
 
     @Test
     void testGetCartById_NotFound() {
         // Arrange
-        when(cartRepository.findById(1)).thenReturn(Optional.empty());
+        when(cartRepo.findById(1)).thenReturn(Optional.empty());
 
         // Act & Assert
-        assertThrows(RuntimeException.class, () -> cartService.getCartById(1));
-        verify(cartRepository, times(1)).findById(1);
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> cartService.getCartById(1));
+        assertEquals("Cart not found", exception.getMessage());
+
+        verify(cartRepo, times(1)).findById(1);
     }
 
+    // Test for createCart
     @Test
-    void testAddCart_Success() {
+    void testCreateCart_Success() {
         // Arrange
-        CartDTO cartDTO = new CartDTO(1, 1, 100, 200.0, true);
-        Cart cart = new Cart(1, 1, 100, 200.0, true, null);
+        CartDTO cartDTO = new CartDTO(1, 101, 2, 100.0, true);
+        Cart cart = new Cart(1, 101, 2, 100.0, true,null);
+        Cart savedCart = new Cart(1, 101, 2, 100.0, true,null);
 
         when(modelMapper.map(cartDTO, Cart.class)).thenReturn(cart);
-        when(cartRepository.save(cart)).thenReturn(cart);
-        when(modelMapper.map(cart, CartDTO.class)).thenReturn(cartDTO);
+        when(cartRepo.save(cart)).thenReturn(savedCart);
+        when(modelMapper.map(savedCart, CartDTO.class)).thenReturn(cartDTO);
 
         // Act
-        CartDTO savedCartDTO = cartService.createCart(cartDTO);
+        CartDTO result = cartService.createCart(cartDTO);
 
         // Assert
-        assertNotNull(savedCartDTO);
-        assertEquals(cartDTO, savedCartDTO);
-        verify(cartRepository, times(1)).save(cart);
+        assertNotNull(result);
+        assertEquals(cartDTO, result);
+
+        verify(cartRepo, times(1)).save(cart);
+        verify(modelMapper, times(1)).map(cartDTO, Cart.class);
+        verify(modelMapper, times(1)).map(savedCart, CartDTO.class);
     }
 
+    // Test for updateCart
     @Test
     void testUpdateCart_Success() {
         // Arrange
-        CartDTO cartDTO = new CartDTO(1, 1, 150, 300.0, true);
-        Cart existingCart = new Cart(1, 1, 100, 200.0, true, null);
-        Cart updatedCart = new Cart(1, 1, 150, 300.0, true, null);
+        CartDTO cartDTO = new CartDTO(1, 101, 2, 200.0, true);
+        Cart existingCart = new Cart(1, 101, 2, 100.0, true,null);
+        Cart updatedCart = new Cart(1, 101, 2, 200.0, true,null);
 
-        when(cartRepository.findById(1)).thenReturn(Optional.of(existingCart));
-        when(cartRepository.save(existingCart)).thenReturn(updatedCart);
+        when(cartRepo.findById(1)).thenReturn(Optional.of(existingCart));
+        when(cartRepo.save(existingCart)).thenReturn(updatedCart);
         when(modelMapper.map(updatedCart, CartDTO.class)).thenReturn(cartDTO);
 
         // Act
-        CartDTO actualCartDTO = cartService.updateCart(1, cartDTO);
+        CartDTO result = cartService.updateCart(1, cartDTO);
 
         // Assert
-        assertNotNull(actualCartDTO);
-        assertEquals(cartDTO, actualCartDTO);
-        verify(cartRepository, times(1)).findById(1);
-        verify(cartRepository, times(1)).save(existingCart);
+        assertNotNull(result);
+        assertEquals(cartDTO, result);
+
+        verify(cartRepo, times(1)).findById(1);
+        verify(cartRepo, times(1)).save(existingCart);
+        verify(modelMapper, times(1)).map(updatedCart, CartDTO.class);
     }
 
     @Test
     void testUpdateCart_NotFound() {
         // Arrange
-        CartDTO cartDTO = new CartDTO(1, 1, 150, 300.0, true);
-
-        when(cartRepository.findById(1)).thenReturn(Optional.empty());
+        CartDTO cartDTO = new CartDTO(1, 101, 2, 200.0, true);
+        when(cartRepo.findById(1)).thenReturn(Optional.empty());
 
         // Act & Assert
-        assertThrows(RuntimeException.class, () -> cartService.updateCart(1, cartDTO));
-        verify(cartRepository, times(1)).findById(1);
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> cartService.updateCart(1, cartDTO));
+        assertEquals("Cart not found", exception.getMessage());
+
+        verify(cartRepo, times(1)).findById(1);
     }
 
+    // Test for softDeleteCart
     @Test
-    void testDeleteCart_Success() {
+    void testSoftDeleteCart_Success() {
         // Arrange
-        Cart cart = new Cart(1, 1, 100, 200.0, true, null);
+        Cart existingCart = new Cart(1, 101, 2, 100.0, true,null);
+        Cart updatedCart = new Cart(1, 101, 2, 100.0, false,null);
 
-        when(cartRepository.findById(1)).thenReturn(Optional.of(cart));
-        doNothing().when(cartRepository).deleteById(1);
+        when(cartRepo.findById(1)).thenReturn(Optional.of(existingCart));
+        when(cartRepo.save(existingCart)).thenReturn(updatedCart);
 
         // Act
         cartService.softDeleteCart(1);
 
         // Assert
-        verify(cartRepository, times(1)).findById(1);
-        verify(cartRepository, times(1)).deleteById(1);
+        assertFalse(existingCart.isActive());
+        verify(cartRepo, times(1)).findById(1);
+        verify(cartRepo, times(1)).save(existingCart);
     }
 
     @Test
-    void testDeleteCart_NotFound() {
+    void testSoftDeleteCart_NotFound() {
         // Arrange
-        when(cartRepository.findById(1)).thenReturn(Optional.empty());
+        when(cartRepo.findById(1)).thenReturn(Optional.empty());
 
         // Act & Assert
-        assertThrows(RuntimeException.class, () -> cartService.softDeleteCart(1));
-        verify(cartRepository, times(1)).findById(1);
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> cartService.softDeleteCart(1));
+        assertEquals("Cart not found", exception.getMessage());
+
+        verify(cartRepo, times(1)).findById(1);
     }
 }
