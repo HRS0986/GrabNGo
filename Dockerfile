@@ -28,8 +28,6 @@ ARG SERVICE_NAME
 # Copy the JAR file of the specific service from the build stage
 COPY --from=build /app/${SERVICE_NAME}/target/*.jar app.jar
 
-# Expose the application's port
-EXPOSE 8080
 
 # Run the application
 ENTRYPOINT ["java", "-jar", "app.jar"]
