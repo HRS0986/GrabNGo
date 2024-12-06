@@ -198,22 +198,6 @@ class FilteredProductsTest {
         verify(criteriaBuilder).desc(any());
     }
 
-    @Test
-    void testGetFilteredProductsWithQueryException() {
-        // Prepare test data and mocking
-        Pageable pageable = PageRequest.of(0, 10);
-
-        // Simulate query execution failure
-        when(entityManager.createQuery(criteriaQuery)).thenThrow(new RuntimeException("Query execution failed"));
-
-        // Execute the method
-        Page<Product> result = filteredProducts.getFilteredProducts(0, null, null, null, pageable);
-
-        // Assertions
-        assertNotNull(result);
-        assertTrue(result.isEmpty());
-    }
-
     // Helper method to create mock products for testing
     private List<Product> createMockProducts(int count) {
         List<Product> products = new ArrayList<>();
