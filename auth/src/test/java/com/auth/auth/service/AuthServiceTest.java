@@ -152,8 +152,7 @@ public class AuthServiceTest {
             // Mock the EmailService to simulate sending an email
             doNothing().when(emailService).sendForgetPasswordEmail(
                     emailCaptor.capture(),
-                    codeCaptor.capture(),
-                    urlCaptor.capture()
+                    codeCaptor.capture()
             );
 
             // Act
@@ -169,8 +168,7 @@ public class AuthServiceTest {
             verify(verificationCodeRepository, times(1)).save(any(VerificationCode.class));
             verify(emailService, times(1)).sendForgetPasswordEmail(
                     eq(email),
-                    eq(verificationCode),
-                    eq(expectedUrl)
+                    eq(verificationCode)
             );
 
             assertEquals(email, emailCaptor.getValue());
