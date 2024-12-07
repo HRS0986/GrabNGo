@@ -2,6 +2,7 @@ package com.product.product.service;
 
 import com.product.product.dto.ProductDto;
 import com.product.product.entity.Product;
+import com.product.product.exception.ImageUploadEcxeption;
 import com.product.product.exception.ResourceNotFoundException;
 import com.product.product.repository.ProductRepository;
 import org.modelmapper.ModelMapper;
@@ -9,10 +10,16 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class ProductService {
@@ -103,6 +110,45 @@ public class ProductService {
             dataMap.put("messege", "Products deleted successfully");
         }
         return dataMap;
+    }
+
+//    public String saveImage(MultipartFile file,String uploadDir) throws ImageUploadEcxeption {
+//        try {
+//            Path uploadPath = Paths.get(uploadDir);
+//            if (!Files.exists(uploadPath)) {
+//                Files.createDirectories(uploadPath);
+//            }
+//
+//            String fileName = file.getOriginalFilename();
+////            System.out.println("picture name is "+fileName);
+//            Path filePath = uploadPath.resolve(fileName);
+//            Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+//            return filePath.toString();
+//        }
+//        catch (Exception e) {
+//            throw new ImageUploadEcxeption("Error uploading image");
+//        }
+//    }
+
+    public String saveImage(MultipartFile file,String uploadDir) throws ImageUploadEcxeption {
+        try {
+            Path uploadPath = Paths.get(uploadDir);
+            if (!Files.exists(uploadPath)) {
+                Files.createDirectories(uploadPath);
+            }
+
+            // Generate a unique filename to prevent overwriting
+            String uniqueFileName = UUID.randomUUID().toString() + "_" + file.getOriginalFilename();
+            Path filePath = uploadPath.resolve(uniqueFileName);
+
+            Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+
+            // Return a URL-friendly path
+            return "/ImageUploadDirectory/" + uniqueFileName;
+        }
+        catch (Exception e) {
+            throw new ImageUploadEcxeption("Error uploading image");
+        }
     }
 
 }
