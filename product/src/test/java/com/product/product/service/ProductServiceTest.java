@@ -44,7 +44,6 @@ public class ProductServiceTest {
     public void setUp() {
         MockitoAnnotations.openMocks(this);
 
-        // Initialize Product and ProductDto objects
         product = new Product();
         product.setProductId(1);
         product.setProductName("Test Product");

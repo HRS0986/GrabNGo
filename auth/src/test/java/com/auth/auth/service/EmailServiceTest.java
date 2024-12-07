@@ -28,14 +28,12 @@ class EmailServiceTest {
     void setUp() {
         MockitoAnnotations.openMocks(this);
 
-        // Inject mock values for @Value fields
         ReflectionTestUtils.setField(emailService, "senderEmail", "test@example.com");
         ReflectionTestUtils.setField(emailService, "senderName", "Test Sender");
     }
 
     @Test
     void testSendForgetPasswordEmail() throws MessagingException, IOException {
-        // Arrange
         String email = "user@example.com";
         String code = "123456";
         String actionURL = "http://example.com/reset-password";
@@ -47,7 +45,6 @@ class EmailServiceTest {
 
         verify(mailSender, times(1)).send(mockMessage);
 
-        // Capture the message for further validation
         ArgumentCaptor<MimeMessage> messageCaptor = ArgumentCaptor.forClass(MimeMessage.class);
         verify(mailSender).send(messageCaptor.capture());
         MimeMessage capturedMessage = messageCaptor.getValue();
