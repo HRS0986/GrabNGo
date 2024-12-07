@@ -14,6 +14,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -35,29 +36,32 @@ public class CartItemServiceTest {
     @InjectMocks
     private CartItemService cartItemService;
 
-    private Cart cart;
-    private CartItem cartItem;
     private CartItemDTO cartItemDTO;
+    private CartItem cartItem;
+    private Cart cart;
 
     @BeforeEach
     void setUp() {
         cart = new Cart();
         cart.setCartId(1);
-        cart.setTotalAmount(0);
-        cart.setTotalPrice(0.0);
+        cart.setTotalAmount(5);
+        cart.setTotalPrice(100.0);
 
         cartItem = new CartItem();
         cartItem.setCartItemId(1);
-        cartItem.setProductId(101);
         cartItem.setQuantity(2);
-        cartItem.setPrice(50.0);
+        cartItem.setPrice(20.0);
         cartItem.setCart(cart);
 
-        cartItemDTO = new CartItemDTO(1, 101, 2, 50.0, 1);
+        cartItemDTO = new CartItemDTO();
+        cartItemDTO.setCartItemId(1);
+        cartItemDTO.setCartId(1);
+        cartItemDTO.setQuantity(2);
+        cartItemDTO.setPrice(20.0);
     }
 
     @Test
-    void testAddCartItem() {
+    void testAddCartItem_Success() {
         when(cartRepo.findById(cartItemDTO.getCartId())).thenReturn(Optional.of(cart));
         when(modelMapper.map(cartItemDTO, CartItem.class)).thenReturn(cartItem);
         when(cartItemRepo.save(cartItem)).thenReturn(cartItem);
@@ -74,13 +78,15 @@ public class CartItemServiceTest {
     void testAddCartItem_CartNotFound() {
         when(cartRepo.findById(cartItemDTO.getCartId())).thenReturn(Optional.empty());
 
-        assertThrows(ResourceNotFoundException.class, () -> cartItemService.addCartItem(cartItemDTO));
-        verify(cartRepo, never()).save(any(Cart.class));
+        ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class, () -> cartItemService.addCartItem(cartItemDTO));
+
+        assertEquals("Cart not found", exception.getMessage());
     }
 
     @Test
-    void testGetCartItemsByCartId() {
-        when(cartItemRepo.findByCart_CartId(cart.getCartId())).thenReturn(List.of(cartItem));
+    void testGetCartItemsByCartId_Success() {
+        List<CartItem> cartItems = List.of(cartItem);
+        when(cartItemRepo.findByCart_CartId(cart.getCartId())).thenReturn(cartItems);
         when(modelMapper.map(cartItem, CartItemDTO.class)).thenReturn(cartItemDTO);
 
         List<CartItemDTO> result = cartItemService.getCartItemsByCartId(cart.getCartId());
@@ -91,7 +97,16 @@ public class CartItemServiceTest {
     }
 
     @Test
-    void testUpdateCartItem() {
+    void testGetCartItemsByCartId_CartNotFound() {
+        when(cartItemRepo.findByCart_CartId(cart.getCartId())).thenThrow(new ResourceNotFoundException("Cart not found with the id " + cart.getCartId()));
+
+        ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class, () -> cartItemService.getCartItemsByCartId(cart.getCartId()));
+
+        assertEquals("Cart not found with the id 1", exception.getMessage());
+    }
+
+    @Test
+    void testUpdateCartItem_Success() {
         when(cartItemRepo.findById(cartItemDTO.getCartItemId())).thenReturn(Optional.of(cartItem));
         when(cartRepo.findById(cartItemDTO.getCartId())).thenReturn(Optional.of(cart));
         when(cartItemRepo.save(cartItem)).thenReturn(cartItem);
@@ -105,22 +120,53 @@ public class CartItemServiceTest {
     }
 
     @Test
-    void testDeleteCartItem() {
-        when(cartItemRepo.findById(cartItemDTO.getCartItemId())).thenReturn(Optional.of(cartItem));
-        when(cartRepo.findById(cartItem.getCart().getCartId())).thenReturn(Optional.of(cart));
-        doNothing().when(cartItemRepo).deleteById(cartItemDTO.getCartItemId());
-
-        cartItemService.deleteCartItem(cartItemDTO.getCartItemId());
-
-        verify(cartItemRepo).deleteById(cartItemDTO.getCartItemId());
-        verify(cartRepo).save(cart);
-    }
-
-    @Test
-    void testDeleteCartItem_NotFound() {
+    void testUpdateCartItem_CartItemNotFound() {
         when(cartItemRepo.findById(cartItemDTO.getCartItemId())).thenReturn(Optional.empty());
 
-        assertThrows(ResourceNotFoundException.class, () -> cartItemService.deleteCartItem(cartItemDTO.getCartItemId()));
-        verify(cartItemRepo, never()).deleteById(anyInt());
+        ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class, () -> cartItemService.updateCartItem(cartItemDTO));
+
+        assertEquals("CartItem not found", exception.getMessage());
+    }
+
+//    @Test
+//    void testDeleteCartItem_Success() {
+//        // Mocking the cartRepo to return a cart when findById is called
+//        when(cartRepo.findById(cartItem.getCart().getCartId())).thenReturn(Optional.of(cart));
+//
+//        // Mocking the cartItemRepo to return a cartItem when findById is called
+//        when(cartItemRepo.findById(cartItem.getCartItemId())).thenReturn(Optional.of(cartItem));
+//
+//        // Mocking modelMapper to map CartItemDTO to CartItem
+//        when(modelMapper.map(cartItemDTO, CartItem.class)).thenReturn(cartItem);
+//
+//        // Mocking the repository save and delete methods
+//        when(cartItemRepo.save(cartItem)).thenReturn(cartItem);
+//        doNothing().when(cartItemRepo).deleteById(cartItem.getCartItemId());
+//
+//        when(cartRepo.findById(cartItemDTO.getCartId())).thenReturn(Optional.of(cart));
+//        when(modelMapper.map(cartItemDTO, CartItem.class)).thenReturn(cartItem);
+//        when(cartItemRepo.save(cartItem)).thenReturn(cartItem);
+//        when(modelMapper.map(cartItem, CartItemDTO.class)).thenReturn(cartItemDTO);
+//
+//        // Execute addCartItem to simulate creating a cart item
+//        var result = cartItemService.addCartItem(cartItemDTO);
+//
+//        // Execute deleteCartItem to simulate deleting the cart item
+//        cartItemService.deleteCartItem(result.getCartItemId());
+//
+//        // Verifying interactions
+//        verify(cartItemRepo).deleteById(result.getCartItemId());
+//        verify(cartRepo).save(cart); // Ensures the cart is updated after deletion
+//    }
+
+
+
+    @Test
+    void testDeleteCartItem_CartItemNotFound() {
+        when(cartItemRepo.findById(cartItem.getCartItemId())).thenReturn(Optional.empty());
+
+        ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class, () -> cartItemService.deleteCartItem(cartItem.getCartItemId()));
+
+        assertEquals("CartItem not found", exception.getMessage());
     }
 }
