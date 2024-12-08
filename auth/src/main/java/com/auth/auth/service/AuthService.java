@@ -98,6 +98,8 @@ public class AuthService {
     }
 
     public ActionResult forgetPassword(String email) throws MessagingException, IOException {
+        email = email.replace("\"", "");
+
         var userOptional = authRepository.findByEmailAddress(email);
         if (userOptional.isEmpty()) {
             throw new UserNotFoundException(Messages.USER_NOT_FOUND);
