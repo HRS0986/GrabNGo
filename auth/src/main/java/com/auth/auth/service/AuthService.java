@@ -43,9 +43,9 @@ public class AuthService {
     public ActionResult login(LoginRequest credentials) {
         var accessToken = jwtService.generateAccessToken(credentials.getEmailAddress());
         var refreshToken = jwtService.generateRefreshToken(credentials.getEmailAddress());
-        var user = userManagerService.getProfile(credentials.getEmailAddress());
-        var role = ((UserDTO)user.getData()).getRole();
-        var tokenResponse = new LoginResponse(accessToken, refreshToken, role);
+        var result = userManagerService.getProfile(credentials.getEmailAddress());
+        var user = (UserDTO)result.getData();
+        var tokenResponse = new LoginResponse(accessToken, refreshToken, user.getRole(), user.getEmailAddress(), user.getUserId());
         return new ActionResult(true, Messages.USER_AUTHENTICATED, tokenResponse, null);
     }
 
@@ -74,13 +74,6 @@ public class AuthService {
             return new ActionResult(
                     false,
                     "Cart creation failed: " + e.getMessage(),
-                    null,
-                    e.getMessage()
-            );
-        } catch (Exception e) {
-            return new ActionResult(
-                    false,
-                    "Registration failed: " + e.getMessage(),
                     null,
                     e.getMessage()
             );
