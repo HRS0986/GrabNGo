@@ -29,7 +29,6 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("api/v1/product")
-@CrossOrigin(origins = "*")
 public class ProductController {
 
     @Value("${file.upload-dir}")
@@ -43,7 +42,7 @@ public class ProductController {
 
     @GetMapping
     public ResponseEntity<SuccessResponse<List<ProductDto>>> getProducts(
-            @RequestParam(value = "categoryId", defaultValue = "1") int categoryId,
+            @RequestParam(value = "categoryId", required = false, defaultValue = "-1") int categoryId,
             @RequestParam(value = "sortBy", defaultValue = "productName") String sortBy,
             @RequestParam(value = "minPrice", required = false) Double minPrice,
             @RequestParam(value = "maxPrice", required = false) Double maxPrice,
