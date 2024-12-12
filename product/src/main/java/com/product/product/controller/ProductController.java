@@ -1,22 +1,38 @@
 package com.product.product.controller;
 
 import com.product.product.dto.ProductDto;
+import com.product.product.exception.ImageUploadEcxeption;
 import com.product.product.response.SuccessResponse;
 import com.product.product.service.ProductService;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.List;
 import java.util.Map;
 
 @RestController
 @RequestMapping("api/v1/product")
 public class ProductController {
+
+    @Value("${file.upload-dir}")
+    private String uploadDir;
 
     private final ProductService productService;
 
@@ -61,7 +77,9 @@ public class ProductController {
     }
 
     @PostMapping()
-    public ResponseEntity<SuccessResponse<ProductDto>> addProduct(@RequestBody ProductDto productDto) {
+    public ResponseEntity<SuccessResponse<ProductDto>> addProduct(@ModelAttribute ProductDto productDto,@RequestParam("file") MultipartFile file) throws IOException {
+        String filePath = productService.saveImage(file,uploadDir);
+        productDto.setImageUrl(filePath);
         ProductDto savedproductdto = productService.saveProduct(productDto);
         SuccessResponse<ProductDto> success = new SuccessResponse<>("saved product", savedproductdto, HttpStatus.OK);
         return new ResponseEntity<>(success, HttpStatus.OK);
@@ -90,5 +108,23 @@ public class ProductController {
         return new ResponseEntity<>(success, HttpStatus.OK);
     }
 
+
+    @GetMapping("/images/{filename}")
+    public ResponseEntity<Resource> getImage(@PathVariable String filename) {
+        try {
+            Path filePath = Paths.get(uploadDir).resolve(filename);
+            Resource resource = new UrlResource(filePath.toUri());
+
+            if (resource.exists()) {
+                return ResponseEntity.ok()
+                        .contentType(MediaType.IMAGE_JPEG)
+                        .body(resource);
+            } else {
+                return ResponseEntity.notFound().build();
+            }
+        } catch (MalformedURLException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
 
 }
