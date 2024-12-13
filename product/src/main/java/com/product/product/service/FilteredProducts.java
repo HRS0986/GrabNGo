@@ -40,9 +40,14 @@ public class FilteredProducts {
         if (maxPrice != null) {
             predicates.add(cb.lessThanOrEqualTo(product.get("productPrice"), maxPrice));
         }
+
         if (StringUtils.hasText(search)) {
             predicates.add(cb.like(cb.lower(product.get("productName")), "%" + search.toLowerCase() + "%"));
         }
+
+
+        // Add condition to filter only active products
+        predicates.add(cb.equal(product.get("isActive"), true));
 
         // Set where clause with all predicates
         query.where(predicates.toArray(new Predicate[0]));
