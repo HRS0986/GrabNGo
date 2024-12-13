@@ -20,8 +20,11 @@ public class RouteValidator {
         String path = request.getURI().getPath();
         String method = String.valueOf(request.getMethod());
 
-        // Skip validation for "products" route only for GET requests
         if (path.contains("/product") && "GET".equalsIgnoreCase(method)) {
+            return false;
+        }
+
+        if (path.contains("/categories") && "GET".equalsIgnoreCase(method)) {
             return false;
         }
 
