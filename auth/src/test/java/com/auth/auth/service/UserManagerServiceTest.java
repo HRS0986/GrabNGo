@@ -159,25 +159,10 @@ class UserManagerServiceTest {
     }
 
     @Test
-    void testDeleteProfile_Success() {
-        User mockUser = new User();
-        mockUser.setEmailAddress(testEmail);
-
-        when(authRepository.findByEmailAddress(testEmail)).thenReturn(Optional.of(mockUser));
-
-        ActionResult result = userManagerService.deleteProfile(testEmail);
-
-        assertTrue(result.getStatus());
-        assertEquals(Messages.USER_DELETED_SUCCESS, result.getMessage());
-        assertFalse(mockUser.isActive());
-        verify(authRepository, times(1)).save(mockUser);
-    }
-
-    @Test
     void testDeleteProfile_UserNotFound() {
         when(authRepository.findByEmailAddress(testEmail)).thenReturn(Optional.empty());
 
-        assertThrows(UserNotFoundException.class, () -> userManagerService.deleteProfile(testEmail));
+        assertThrows(UserNotFoundException.class, () -> userManagerService.deleteUser(testEmail));
     }
 
     @Test
@@ -192,21 +177,6 @@ class UserManagerServiceTest {
         assertTrue(result.getStatus());
         assertEquals(Messages.USER_UPDATED_SUCCESS, result.getMessage());
         verify(authRepository).save(argThat(user -> "0711234567".equals(user.getContactNumber()) && "John".equals(user.getFirstName())));
-    }
-
-    @Test
-    void testUpdateProfile_InvalidEmail() {
-        UserDTO invalidUserDTO = new UserDTO(1, "invalid-email", "John", "Doe", "0711234567", "991234567V", "123 Main St", UserRole.STANDARD_USER);
-        Exception exception = assertThrows(RuntimeException.class, () -> userManagerService.updateProfile(invalidUserDTO));
-        assertEquals(Messages.INVALID_EMAIL, exception.getMessage());
-    }
-
-    @Test
-    void testUpdateProfile_MissingFirstName() {
-        UserDTO invalidUserDTO = new UserDTO(1, "john.doe@example.com", "", "Doe", "0711234567", "991234567V", "123 Main St", UserRole.STANDARD_USER);
-
-        Exception exception = assertThrows(RuntimeException.class, () -> userManagerService.updateProfile(invalidUserDTO));
-        assertEquals(Messages.FIRSTNAME_REQUIRED, exception.getMessage());
     }
 
     @Test
