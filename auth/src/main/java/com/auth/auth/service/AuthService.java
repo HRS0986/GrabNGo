@@ -28,20 +28,24 @@ public class AuthService {
     private final EmailService emailService;
     private final VerificationCodeRepository verificationCodeRepository;
     private final WebClient.Builder webClientBuilder;
+    private final UserManagerService userManagerService;
 
-    public AuthService(AuthRepository authRepository, PasswordEncoder passwordEncoder, JwtService jwtService, EmailService emailService, VerificationCodeRepository verificationCodeRepository, WebClient.Builder webClientBuilder) {
+    public AuthService(AuthRepository authRepository, PasswordEncoder passwordEncoder, JwtService jwtService, EmailService emailService, VerificationCodeRepository verificationCodeRepository, WebClient.Builder webClientBuilder, UserManagerService userManagerService) {
         this.authRepository = authRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
         this.emailService = emailService;
         this.verificationCodeRepository = verificationCodeRepository;
         this.webClientBuilder = webClientBuilder;
+        this.userManagerService = userManagerService;
     }
 
     public ActionResult login(LoginRequest credentials) {
         var accessToken = jwtService.generateAccessToken(credentials.getEmailAddress());
         var refreshToken = jwtService.generateRefreshToken(credentials.getEmailAddress());
-        var tokenResponse = new LoginResponse(accessToken, refreshToken);
+        var result = userManagerService.getProfile(credentials.getEmailAddress());
+        var user = (UserDTO)result.getData();
+        var tokenResponse = new LoginResponse(accessToken, refreshToken, user.getRole(), user.getEmailAddress(), user.getUserId());
         return new ActionResult(true, Messages.USER_AUTHENTICATED, tokenResponse, null);
     }
 
@@ -73,13 +77,6 @@ public class AuthService {
                     null,
                     e.getMessage()
             );
-        } catch (Exception e) {
-            return new ActionResult(
-                    false,
-                    "Registration failed: " + e.getMessage(),
-                    null,
-                    e.getMessage()
-            );
         }
     }
 
@@ -101,6 +98,8 @@ public class AuthService {
     }
 
     public ActionResult forgetPassword(String email) throws MessagingException, IOException {
+        email = email.replace("\"", "");
+
         var userOptional = authRepository.findByEmailAddress(email);
         if (userOptional.isEmpty()) {
             throw new UserNotFoundException(Messages.USER_NOT_FOUND);

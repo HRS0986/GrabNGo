@@ -1,5 +1,4 @@
 package com.auth.auth.controller;
-
 import com.auth.auth.constants.Messages;
 import com.auth.auth.dto.*;
 import com.auth.auth.exception.DataValidationException;
@@ -28,7 +27,6 @@ import java.util.Set;
 
 @RestController
 @RequestMapping("/api/v1/auth")
-@CrossOrigin(origins = "*")
 public class AuthController {
 
     private final AuthService authService;
