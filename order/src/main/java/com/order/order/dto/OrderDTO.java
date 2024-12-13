@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -25,6 +26,6 @@ public class OrderDTO {
     private String city;
     private String country;
     private String zipCode;
-    private List<OrderItemDTO> orderItems;
+    private List<OrderItemDTO> orderItems = new ArrayList<>(); // Initialize with an empty list
 
 }
