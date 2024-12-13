@@ -13,11 +13,20 @@ public class RouteValidator {
             "/auth/login",
             "/auth/forget-password",
             "/auth/verify",
-            "/auth/reset-password"
+            "/auth/reset-password",
+            "/products"
     );
 
-    public Predicate<ServerHttpRequest> isSecured =
-            request -> openApiEndpoints
-                    .stream()
-                    .noneMatch(uri -> request.getURI().getPath().contains(uri));
+    public Predicate<ServerHttpRequest> isSecured = request -> {
+        String path = request.getURI().getPath();
+        String method = String.valueOf(request.getMethod());
+
+        // Skip validation for "products" route only for GET requests
+        if (path.contains("/products") && "GET".equalsIgnoreCase(method)) {
+            return false;
+        }
+
+        // Skip validation for other open API endpoints
+        return openApiEndpoints.stream().noneMatch(path::contains);
+    };
 }
