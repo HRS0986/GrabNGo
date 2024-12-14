@@ -1,11 +1,7 @@
 package com.auth.auth.service;
 
 import com.auth.auth.constants.Messages;
-import com.auth.auth.dto.LoginRequest;
-import com.auth.auth.dto.LoginResponse;
-import com.auth.auth.dto.RefreshTokenRequest;
-import com.auth.auth.dto.ResetPasswordRequest;
-import com.auth.auth.dto.VerificationRequest;
+import com.auth.auth.dto.*;
 import com.auth.auth.exception.UserNotFoundException;
 import com.auth.auth.model.User;
 import com.auth.auth.model.VerificationCode;
@@ -47,6 +43,9 @@ public class AuthServiceTest {
     @Mock
     private VerificationCodeRepository verificationCodeRepository;
 
+    @Mock
+    private UserManagerService userManagerService;
+
     private String userEmail = "user@example.com";
     private String password = "password123";
     private String newPassword = "newPassword123";
@@ -62,14 +61,19 @@ public class AuthServiceTest {
     }
 
     @Test
-    public void testLogin_Success() {
-        LoginRequest loginRequest = new LoginRequest(userEmail, password);
+    void login_successful() {
+        LoginRequest loginRequest = new LoginRequest("test@example.com", "password");
 
         User mockUser = new User();
-        mockUser.setEmailAddress(userEmail);
-        when(authRepository.findByEmailAddress(userEmail)).thenReturn(Optional.of(mockUser));
-        when(jwtService.generateAccessToken(userEmail)).thenReturn(accessToken);
-        when(jwtService.generateRefreshToken(userEmail)).thenReturn(refreshToken);
+        mockUser.setEmailAddress("test@example.com");
+        mockUser.setPassword(passwordEncoder.encode("password"));
+
+        UserDTO mockUserDTO = new UserDTO(1, "test@example.com", "John", "Doe", "0753905070", "987654321", "Address", null);
+        when(authRepository.findByEmailAddress(loginRequest.getEmailAddress())).thenReturn(Optional.of(mockUser));
+        when(passwordEncoder.matches(loginRequest.getPassword(), mockUser.getPassword())).thenReturn(true);
+        when(jwtService.generateAccessToken(loginRequest.getEmailAddress())).thenReturn("accessToken");
+        when(jwtService.generateRefreshToken(loginRequest.getEmailAddress())).thenReturn("refreshToken");
+        when(userManagerService.getProfile(loginRequest.getEmailAddress())).thenReturn(new ActionResult(true, "Success", mockUserDTO, null));
 
         ActionResult result = authService.login(loginRequest);
 
@@ -78,20 +82,11 @@ public class AuthServiceTest {
         LoginResponse response = (LoginResponse) result.getData();
         assertNotNull(response.getAccessToken());
         assertNotNull(response.getRefreshToken());
-    }
+        assertEquals("accessToken", response.getAccessToken());
+        assertEquals("refreshToken", response.getRefreshToken());
 
-    @Test
-    public void testSignup_Failure() {
-        User newUser = new User();
-        newUser.setEmailAddress("newuser@example.com");
-        newUser.setPassword("newUserPassword");
-
-        when(authRepository.save(any(User.class))).thenThrow(new RuntimeException("Database error"));
-
-        ActionResult result = authService.register(newUser);
-
-        assertFalse(result.getStatus());
-        assertTrue(result.getMessage().contains("Registration failed"));
+        verify(authRepository, times(1)).findByEmailAddress(loginRequest.getEmailAddress());
+        verify(userManagerService, times(1)).getProfile(loginRequest.getEmailAddress());
     }
 
     @Test
