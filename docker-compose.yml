@@ -1,0 +1,186 @@
+﻿services:
+  mysql-workbench:
+    image: lscr.io/linuxserver/mysql-workbench:latest
+    container_name: mysql-workbench
+    cap_add:
+      - IPC_LOCK
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Etc/UTC
+    ports:
+      - 3000:3000
+      - 3001:3001
+    restart: unless-stopped
+
+  order-db:
+    image: mysql:8.4.3
+    container_name: order-db
+    ports:
+      - "33061:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: OrderDB
+    restart: always
+
+  product-db:
+    image: mysql:8.4.3
+    container_name: product-db
+    ports:
+      - "33062:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: ProductDB
+    restart: always
+
+  cart-db:
+    image: mysql:8.4.3
+    container_name: cart-db
+    ports:
+      - "33063:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: CartDB
+    restart: always
+
+  category-db:
+    image: mysql:8.4.3
+    container_name: category-db
+    ports:
+      - "33064:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: CategoryDB
+    restart: always
+
+  auth-db:
+    image: mysql:8.4.3
+    container_name: auth-db
+    ports:
+      - "33065:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: AuthDB
+    restart: always
+
+  discovery-server:
+    container_name: discovery-server
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        SERVICE_NAME: discovery
+    ports:
+      - "8761:8761"
+
+  api-gateway:
+    container_name: api-gateway
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        SERVICE_NAME: apigateway
+    environment:
+      - server.port=80
+      - eureka.client.service-url.defaultZone=http://discovery-server:8761/eureka
+    ports:
+      - "8080:80"
+    expose:
+      - "80"
+    depends_on:
+      - discovery-server
+
+  auth-service:
+    container_name: auth-service
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        SERVICE_NAME: auth
+    environment:
+      - server.port=80
+      - spring.datasource.url=jdbc:mysql://auth-db:3306/AuthDB
+      - eureka.client.service-url.defaultZone=http://discovery-server:8761/eureka
+    ports:
+      - "8082:80"
+    expose:
+      - "80"
+    depends_on:
+      - discovery-server
+      - auth-db
+
+  order-service:
+    container_name: order-service
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        SERVICE_NAME: order
+    environment:
+      - server.port=80
+      - spring.datasource.url=jdbc:mysql://order-db:3306/OrderDB
+      - eureka.client.service-url.defaultZone=http://discovery-server:8761/eureka
+    ports:
+      - "8083:80"
+    expose:
+      - "80"
+    depends_on:
+      - discovery-server
+      - order-db
+
+  product-service:
+    container_name: product-service
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        SERVICE_NAME: product
+    environment:
+      - server.port=80
+      - spring.datasource.url=jdbc:mysql://product-db:3306/ProductDB
+      - eureka.client.service-url.defaultZone=http://discovery-server:8761/eureka
+    ports:
+      - "8084:80"
+    expose:
+      - "80"
+    depends_on:
+      - discovery-server
+      - product-db
+
+  cart-service:
+    container_name: cart-service
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        SERVICE_NAME: cart
+    environment:
+      - server.port=80
+      - spring.datasource.url=jdbc:mysql://cart-db:3306/CartDB
+      - eureka.client.service-url.defaultZone=http://discovery-server:8761/eureka
+    ports:
+      - "8085:80"
+    expose:
+      - "80"
+    depends_on:
+      - discovery-server
+      - cart-db
+
+  category-service:
+    container_name: category-service
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        SERVICE_NAME: category
+    environment:
+      - server.port=80
+      - spring.datasource.url=jdbc:mysql://category-db:3306/CategoryDB
+      - eureka.client.service-url.defaultZone=http://discovery-server:8761/eureka
+    ports:
+      - "8086:80"
+    expose:
+      - "80"
+    depends_on:
+      - discovery-server
+      - category-db
